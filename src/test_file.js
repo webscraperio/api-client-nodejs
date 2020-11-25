@@ -31,18 +31,22 @@ let mySitemap = `{"_id":"${time}","startUrl":["https://webscraper.io/test-sites/
         json: true
     });
 
-    function waitToFinish(){
+    var finished = false;
+    while(!finished){
 
         request(`https://api.webscraper.io/api/v1/scraping-job/${JSON.stringify(res.data.id)}?api_token=kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8`, {json: true}, function(err, resii, body) {
-
-        if(body.data.status == "finished"){
-            console.log("this job is finished");
-            doThingsWithJson();
-        }else
-        setTimeout( waitToFinish, 5000);
-
+            if(body.data.status == "finished"){
+                console.log("this job is finished");
+                doThingsWithJson();
+                finished = true;
+            }else
+                console.log(body.data.status);
         });
-    };
+        await sleep(2000)
+    }
+    function sleep(ms) {
+		return new Promise((resolve) => setTimeout(resolve, ms));
+	};
 
     function doThingsWithJson(){
 
@@ -67,8 +71,5 @@ let mySitemap = `{"_id":"${time}","startUrl":["https://webscraper.io/test-sites/
         });
 
     }
-
-    waitToFinish();
-
 
 })();
