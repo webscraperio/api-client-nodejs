@@ -1,0 +1,73 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "indent": [true, "tabs", 4],
+    "object-literal-sort-keys": false,
+    "object-literal-key-quotes": [true, "consistent"],
+    "forin": false,
+    "max-line-length": false,
+    "ordered-imports": false,
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-snake-case", "allow-pascal-case"],
+    "no-empty-interface": false,
+    "no-unused-expression": false,
+    "no-namespace": false,
+    "interface-over-type-literal": false,
+    "no-async-without-await": true,
+    "no-null-keyword": true,
+    "prefer-readonly": true,
+    "no-empty": true,
+    "no-console": true,
+    "no-return-await": true,
+    "interface-name": [true, "always-prefix"],
+    "no-eval": true,
+    "no-invalid-template-strings": true,
+    "prefer-template": true,
+    "triple-equals": true,
+    "max-classes-per-file": [true, 1],
+    "whitespace": [true, "check-branch", "check-decl", "check-rest-spread"],
+    "one-line": [true, "check-catch", "check-finally", "check-else", "check-open-brace", "check-whitespace"],
+    "await-promise": true,
+    "no-unused-variable": true,
+    "no-unsafe-any": true,
+    "no-floating-promises": true,
+    "no-promise-as-boolean": true,
+    "no-default-export": true,
+    "quotemark": [true, "double", "jsx-double", "avoid-escape", "avoid-template"],
+    "no-string-throw": true,
+    "trailing-comma": [
+      true,
+      {
+        "singleline": {
+          "objects": "never",
+          "arrays": "never",
+          "functions": "never",
+          "typeLiterals": "never",
+          "imports": "never",
+          "exports": "never"
+        },
+        "multiline": {
+          "objects": "always",
+          "arrays": "always",
+          "functions": "never",
+          "typeLiterals": "always",
+          "imports": "always",
+          "exports": "always"
+        },
+        "esSpecCompliant": true
+      }
+    ],
+    "typedef": [true, "call-signature", "parameter", "property-declaration", "member-variable-declaration"],
+    "member-access": true,
+    "semicolon": [true, "always"],
+    "no-consecutive-blank-lines": true
+  },
+  "rulesDirectory": [],
+  "linterOptions": {
+    "exclude": [
+    ]
+  }
+}

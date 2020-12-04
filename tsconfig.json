@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": false,
+    "module": "commonjs",
+    "target": "ES2017",
+    "allowJs": true,
+    "lib": ["es2017", "dom", "esnext.asynciterable"]
+  },
+  "include": [
+    "src/**/*"
+  ]
+}
