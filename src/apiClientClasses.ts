@@ -1,8 +1,8 @@
 import * as request from "request-promise-native";
-import {ICreateScrapingJobResponse} from "../interfaces/ICreateScrapingJobResponse";
-import {ICreateSiteMapResponse} from "../interfaces/ICreateSiteMapResponse";
-import {IGetScrapingJobResponse} from "../interfaces/IGetScrapingJobResponse";
-import {IGetJsonResponse} from "../interfaces/IGetJsonResponse";
+import {ICreateScrapingJobResponse} from "./interfaces/ICreateScrapingJobResponse";
+import {ICreateSiteMapResponse} from "./interfaces/ICreateSiteMapResponse";
+import {IGetScrapingJobResponse} from "./interfaces/IGetScrapingJobResponse";
+import {IGetJsonResponse} from "./interfaces/IGetJsonResponse";
 
 export class Client {
 	public token: string;

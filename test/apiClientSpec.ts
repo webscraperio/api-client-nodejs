@@ -1,9 +1,9 @@
 import * as chai from "chai";
 import {Client} from "../src/apiClientClasses";
-import {ICreateScrapingJobResponse} from "../interfaces/ICreateScrapingJobResponse";
-import {ICreateSiteMapResponse} from "../interfaces/ICreateSiteMapResponse";
-import {IGetScrapingJobResponse} from "../interfaces/IGetScrapingJobResponse";
-import {IGetJsonResponse} from "../interfaces/IGetJsonResponse";
+import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobResponse";
+import {ICreateSiteMapResponse} from "../src/interfaces/ICreateSiteMapResponse";
+import {IGetScrapingJobResponse} from "../src/interfaces/IGetScrapingJobResponse";
+import {IGetJsonResponse} from "../src/interfaces/IGetJsonResponse";
 
 const expect = chai.expect;
 const today = new Date();
@@ -19,7 +19,7 @@ let scrapedJson: IGetJsonResponse;
 
 const scrapingTest = new Client(token);
 
-describe("life of a sitemap", () => {
+describe("API Client", () => {
 
 	it("should import a sitemap", async () => {
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
