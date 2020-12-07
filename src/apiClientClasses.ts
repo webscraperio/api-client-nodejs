@@ -1,8 +1,9 @@
 import * as request from "request-promise-native";
-import {ICreateScrapingJobResponse} from "../interfaces/ICreateScrapingJobResponse";
-import {ICreateSiteMapResponse} from "../interfaces/ICreateSiteMapResponse";
-import {IGetScrapingJobResponse} from "../interfaces/IGetScrapingJobResponse";
-import {IGetJsonResponse} from "../interfaces/IGetJsonResponse";
+import {ICreateScrapingJobResponse} from "./interfaces/ICreateScrapingJobResponse";
+import {ICreateSiteMapResponse} from "./interfaces/ICreateSiteMapResponse";
+import {IGetScrapingJobResponse} from "./interfaces/IGetScrapingJobResponse";
+import {IGetJsonResponse} from "./interfaces/IGetJsonResponse";
+import {IDeleteSitemap} from "./interfaces/IDeleteSitemap";
 
 export class Client {
 	public token: string;
@@ -55,6 +56,15 @@ export class Client {
 	public async getJson(scrapingJobId: number): Promise<IGetJsonResponse> {
 		const response = await request(`https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/json?api_token=${this.token}`, {json: true}, (err, res, body) => {
 			return body;
+		});
+		return response;
+	}
+
+	public async deleteSitemap(sitemapId: number): Promise<IDeleteSitemap> {
+		const response = await request({
+			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
+			method: "DELETE",
+			json: true,
 		});
 		return response;
 	}
