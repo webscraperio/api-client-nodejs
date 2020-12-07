@@ -1,5 +1,6 @@
 import {expect} from "chai";
 import {Client} from "../src/apiClientClasses";
+import {sleep} from "./sleepFunction";
 import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobResponse";
 import {ICreateSiteMapResponse} from "../src/interfaces/ICreateSiteMapResponse";
 import {IGetScrapingJobResponse} from "../src/interfaces/IGetScrapingJobResponse";
@@ -48,11 +49,11 @@ describe("API Client", () => {
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		scrapingJobInfo = await scrapingTest.createScrapingJob(sitemapInfoData.id);
 
-		const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 		doingScraping = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
-		while (doingScraping.status !== "finished") {
+		const startTime = Date.now();
+		while (startTime + 60000 > Date.now() && doingScraping.status !== "finished") {
 			doingScraping = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
-			await sleep(2000);
+			await sleep(5000);
 		}
 
 		expect(doingScraping.status).to.not.be.undefined;
@@ -64,11 +65,12 @@ describe("API Client", () => {
 
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		scrapingJobInfo = await scrapingTest.createScrapingJob(sitemapInfoData.id);
-		const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 		doingScraping = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
-		while (doingScraping.status !== "finished") {
+
+		const startTime = Date.now();
+		while (startTime + 60000 > Date.now() && doingScraping.status !== "finished") {
 			doingScraping = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
-			await sleep(2000);
+			await sleep(5000);
 		}
 		scrapedJson = await scrapingTest.getJson(scrapingJobInfo.id);
 		expect(scrapedJson).to.not.be.undefined;
