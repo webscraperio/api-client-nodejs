@@ -61,8 +61,10 @@ export class Client {
 	}
 
 	public async deleteSitemap(sitemapId: number): Promise<IDeleteSitemap> {
-		const response = await request(`https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`, {json: true}, (err, res, body) => {
-			return body;
+		const response = await request({
+			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
+			method: "DELETE",
+			json: true,
 		});
 		return response;
 	}
