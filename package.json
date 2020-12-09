@@ -10,6 +10,8 @@
     "@types/chai": "^4.2.14",
     "@types/request-promise-native": "^1.0.17",
     "chai": "^4.2.0",
+    "csv-parser": "^3.0.0",
+    "fs": "0.0.1-security",
     "request-promise-native": "^1.0.9",
     "ts-node": "^9.1.0",
     "tslint": "^6.1.3",
