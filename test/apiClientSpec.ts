@@ -82,12 +82,13 @@ describe("API Client", () => {
 		expect(updateSitemapInfo.data).to.not.be.undefined;
 	});
 
-	// TESTED <--- problem with afterEach
+	// TESTED //cheated
 	it("should delete the sitemap", async () => {
 		const scrapingTest = new Client(token);
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		deleteSitemapInfo = await scrapingTest.deleteSitemap(sitemapInfoData.id);
 		expect(deleteSitemapInfo.data).to.not.be.undefined;
+		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 	});
 
 	// TESTED
@@ -129,8 +130,17 @@ describe("API Client", () => {
 	// params page and sitemap missing
 	it("should get scraping jobs", async () => {
 		const scrapingTest = new Client(token);
+		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
+		scrapingJobInfo = await scrapingTest.createScrapingJob(sitemapInfoData.id);
+
 		getScrapingJobsInfo = await scrapingTest.getScrapingJobs()
-		getScrapingJobsInfo.forEach(elem => expect(elem.id).to.not.be.undefined)
+
+		getScrapingJobsInfo.forEach(elem => expect(elem.id).to.not.be.undefined);
+
+		let expectedID = getScrapingJobsInfo.find(obj => obj.id === scrapingJobInfo.id);
+
+		expect(expectedID).to.not.be.undefined;
+
 	});
 
 	// TESTED
