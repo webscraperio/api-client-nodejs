@@ -62,12 +62,16 @@ describe("API Client", () => {
 		expect(getSitemapInfo.id).to.not.be.undefined;
 	});
 
-	// TESTED <--- problem with afterEach
+	// TESTED
 	// params - page missing
 	it("should get sitemaps", async () => {
 		const scrapingTest = new Client(token);
+
+		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
+
 		getSitemapsInfo = await scrapingTest.getSitemaps();
 		getSitemapsInfo.forEach(elem => expect(elem.id).to.not.be.undefined)
+		getSitemapsInfo.forEach(elem => expect(elem).to.have.deep.members([{id: sitemapInfoData.id}, {name: mySitemap}]))
 	});
 
 	// TESTED
