@@ -42,9 +42,12 @@ describe("API Client", () => {
 	});
 
 	afterEach(async () => {
-		const scrapingTest = new Client(token);
-		deleteSitemapInfo = await scrapingTest.deleteSitemap(sitemapInfoData.id);
-		expect(deleteSitemapInfo.success).to.be.equal(true);
+		if(sitemapInfoData.id) {
+			const scrapingTest = new Client(token);
+			deleteSitemapInfo = await scrapingTest.deleteSitemap(sitemapInfoData.id);
+			expect(deleteSitemapInfo.success).to.be.equal(true);
+		}
+		sitemapInfoData = undefined;
 	});
 
 	// TESTED
@@ -82,13 +85,13 @@ describe("API Client", () => {
 		expect(updateSitemapInfo.data).to.not.be.undefined;
 	});
 
-	// TESTED //cheated
+	// TESTED
 	it("should delete the sitemap", async () => {
 		const scrapingTest = new Client(token);
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		deleteSitemapInfo = await scrapingTest.deleteSitemap(sitemapInfoData.id);
 		expect(deleteSitemapInfo.data).to.not.be.undefined;
-		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
+		sitemapInfoData = undefined;
 	});
 
 	// TESTED
@@ -220,10 +223,9 @@ describe("API Client", () => {
 		expect(deleteScrapingJob.data).to.not.be.undefined;
 	});
 
-	// TESTED cheated
+	// TESTED
 	it("should return account info", async () => {
 		const scrapingTest = new Client(token);
-		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		accountInfo = await scrapingTest.getAccountInfo();
 		expect(accountInfo.email).to.not.be.undefined;
 	});
