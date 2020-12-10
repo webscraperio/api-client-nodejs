@@ -220,9 +220,10 @@ describe("API Client", () => {
 		expect(deleteScrapingJob.data).to.not.be.undefined;
 	});
 
-	// TESTED <--- problem with afterEach
+	// TESTED cheated
 	it("should return account info", async () => {
 		const scrapingTest = new Client(token);
+		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		accountInfo = await scrapingTest.getAccountInfo();
 		expect(accountInfo.email).to.not.be.undefined;
 	});
