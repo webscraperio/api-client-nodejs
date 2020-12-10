@@ -66,15 +66,15 @@ describe("API Client", () => {
 	});
 
 	// TESTED
-	// params - page missing
+	// params - page missing, need access to all pages
 	it("should get sitemaps", async () => {
 		const scrapingTest = new Client(token);
 
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
-
+		getSitemapInfo = await scrapingTest.getSitemap(sitemapInfoData.id)
 		getSitemapsInfo = await scrapingTest.getSitemaps();
 		getSitemapsInfo.forEach(elem => expect(elem.id).to.not.be.undefined)
-		getSitemapsInfo.forEach(elem => expect(elem).to.have.deep.members([{id: sitemapInfoData.id}, {name: mySitemap}]))
+		getSitemapsInfo.forEach(elem => expect(elem).to.have.deep.members([{id: sitemapInfoData.id}, {name: getSitemapInfo.name}]))
 	});
 
 	// TESTED
@@ -130,7 +130,7 @@ describe("API Client", () => {
 		});
 
 	// TESTED <--- problem with afterEach
-	// params page and sitemap missing
+	// params page and sitemap missing, , need access to all pages
 	it("should get scraping jobs", async () => {
 		const scrapingTest = new Client(token);
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
