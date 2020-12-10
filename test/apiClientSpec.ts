@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import * as csv from "csv-parser";
-import fs = require('fs');
+import * as csv from "async-csv";
+// import fs = require('fs');
 import {Client} from "../src/apiClientClasses";
 import {sleep} from "./sleepFunction";
 import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobResponse";
@@ -146,7 +146,7 @@ describe("API Client", () => {
 		expect(scrapedJson).to.not.be.undefined;
 	});
 
-	// NOT TESTED
+	// TESTED
 	it("should download scraped data in CSV format", async () => {
 		const scrapingTest = new Client(token);
 
@@ -161,10 +161,13 @@ describe("API Client", () => {
 		}
 
 		scrapedCSV = await scrapingTest.getCSV(scrapingJobInfo.id);
-		let parsedScrapedCSV = [];
+		let scrapedCSVstring: string = scrapedCSV.toString();
+		let parsedScrapedCSV = await csv.parse(scrapedCSVstring);
 
-		//fs.createReadStream(scrapedCSV).
-	//	expect(scrapedCSV).to.not.be.undefined;
+		// parsedScrapedCSV.forEach(elem => expect(elem).to.not.be.undefined)
+		// parsedScrapedCSV is an array with csv elements.
+
+		expect(parsedScrapedCSV.length).to.be.ok;
 	});
 
 	// TESTED
