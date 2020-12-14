@@ -10,9 +10,12 @@ import {IGetAccountInfoResponse} from "./interfaces/IGetAccountInfoResponse";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 import {IGetSiteMapsResponse} from "./interfaces/IGetSiteMapsResponse";
 import {IGetSiteMapResponse} from "./interfaces/IGetSiteMapResponse";
-import {IGetScrapingJobsResponse} from "./interfaces/IGetScrapingJobsResponse"
+import {IGetScrapingJobsResponse} from "./interfaces/IGetScrapingJobsResponse";
 import {IGetCSVResponse} from "./interfaces/IGetCSVResponse";
 import {IGetScrapingJobProblResponse} from "./interfaces/IGetScrapingJobProblResponse";
+// import {ISendTotalSitemapPagesResponse} from "./interfaces/ISendTotalSitemapPagesResponse";
+// import {ISendScrapingJobsTotalPagesResponse} from "./interfaces/ISendScrapingJobsTotalPagesResponse";
+// import * as url from "url";
 
 export class Client {
 	public token: string;
@@ -21,7 +24,7 @@ export class Client {
 		this.token = token;
 	}
 
-	// CREATE SITEMAP done
+	// CREATE SITEMAP
 	public async createSitemap(mySitemap: string): Promise<ICreateSiteMapResponse> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/sitemap?api_token=${this.token}`,
@@ -35,7 +38,7 @@ export class Client {
 		return response.data;
 	}
 
-	// GET SITEMAP .need to test semi-done
+	// GET SITEMAP
 	// https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}
 	public async getSitemap(sitemapId: number): Promise<IGetSiteMapResponse> {
 		const response = await request({
@@ -48,20 +51,37 @@ export class Client {
 
 	// GET SITEMAPS
 	// Optional query parameters:
-	// -page: &page=2	:need to add query parameters semi-done
-	public async getSitemaps(): Promise<IGetSiteMapsResponse[]> {
+	// -page: &page=2
+	public async getSitemapsOfPage(page: number = 1): Promise<IGetSiteMapsResponse[]> {
+
+	/*	if(this.page === page) {
+			return this.array
+		}
+	*/
 		const response = await request({
-			url: `https://api.webscraper.io/api/v1/sitemaps?api_token=${this.token}`,
-			// qs: {
-				// page: number ,
-			// },
+			url: `https://api.webscraper.io/api/v1/sitemaps?api_token=${this.token}&page=${page}`,
 			method: "GET",
 			json: true,
 		}) as IWebScraperResponse<IGetSiteMapsResponse[]>;
 		return response.data;
 	}
+/*
+	public async sendSitemapTotalPages(): Promise<ISendTotalSitemapPagesResponse>{
+		let response = await request({
+			url: `https://api.webscraper.io/api/v1/sitemaps?api_token=${this.token}`,
+			method: "GET",
+			json: true,
+		})
+		return response = {"current_page": response.current_page,
+							"last_page": response.last_page,
+							"total": response.total,
+							"per_page": response.per_page,
+							};
+	}
 
-	// UPDATE SITEMAP .need to test semi-done
+ */
+
+	// UPDATE SITEMAP
 	public async updateSitemap(sitemapId: number, mySitemap: string): Promise<IUpdateSiteMapResponse> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
@@ -75,7 +95,7 @@ export class Client {
 		return response;
 	}
 
-	// DELETE SITEMAP done
+	// DELETE SITEMAP
 	public async deleteSitemap(sitemapId: number): Promise<IDeleteSitemap> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
@@ -85,7 +105,7 @@ export class Client {
 		return response;
 	}
 
-	// CREATE SCRAPING JOB done
+	// CREATE SCRAPING JOB
 	public async createScrapingJob(sitemapId: number): Promise<ICreateScrapingJobResponse> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/scraping-job?api_token=${this.token}`,
@@ -105,7 +125,7 @@ export class Client {
 		return response.data;
 	}
 
-	// GET SCRAPING JOB done
+	// GET SCRAPING JOB
 	public async getScrapingJob(scrapingJobId: number): Promise<IGetScrapingJobResponse> {
 
 		const response = await request(`https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}?api_token=${this.token}`, {json: true}, (err, res, body) => {
@@ -115,25 +135,35 @@ export class Client {
 		return response.data;
 	}
 
-
 	// GET SCRAPING JOBS
 	// Optional query parameters:
 	// - page: &page=2
-	// - sitemap: &sitemap_id=123	:need to add query parameters semi-done
-	public async getScrapingJobs(): Promise<IGetScrapingJobsResponse[]> {
+	// - sitemap: &sitemap_id=123
+	public async getScrapingJobs(page: number = 1, sitemapId?: number): Promise<IGetScrapingJobsResponse[]> {
 		const response = await request({
-			url: `https://api.webscraper.io/api/v1/sitemaps?api_token=${this.token}`,
-			// qs: {
-			// page: number ,
-			// sitemapId: number ,
-			// },
+			url: `https://api.webscraper.io/api/v1/scraping-jobs?api_token=${this.token}&page=${page}&sitemap_id=${sitemapId}`,
 			method: "GET",
 			json: true,
 		}) as IWebScraperResponse<IGetScrapingJobsResponse[]>;
 		return response.data;
 	}
+/*
+	public async sendScrapingJobsTotalPages(): Promise<ISendScrapingJobsTotalPagesResponse>{
+		let response = await request({
+			url: `https://api.webscraper.io/api/v1/scraping-jobs?api_token=${this.token}`,
+			method: "GET",
+			json: true,
+		})
+		return response = {"current_page": response.current_page,
+			"last_page": response.last_page,
+			"total": response.total,
+			"per_page": response.per_page,
+		};
+	}
 
-	// DOWNLOAD SCRAPED DATA IN JSON done
+ */
+
+	// DOWNLOAD SCRAPED DATA IN JSON
 	public async getJson(scrapingJobId: number): Promise<IGetJsonResponse> {
 		const response = await request(`https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/json?api_token=${this.token}`, {json: true}, (err, res, body) => {
 			return body;
@@ -141,7 +171,7 @@ export class Client {
 		return response;
 	}
 
-	// DOWNLOAD SCRAPED DATA IN CSV FORMAT   not quite sure about this one  -> not done
+	// DOWNLOAD SCRAPED DATA IN CSV FORMAT
 	public async getCSV(scrapingJobId: number): Promise<IGetCSVResponse> {
 		const response = await request(`https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/csv?api_token=${this.token}`, (err, res, body) => {
 			return body;
@@ -151,10 +181,10 @@ export class Client {
 
 	// get scraping job problematic urls
 	// Optional query parameters:
-	// - page: &page=2 :need to add query parameters semi-done
-	public async getScrapingJobProbUrl(scrapingJobId: number): Promise<IGetScrapingJobProblResponse[]> {
+	// - page: &page=2
+	public async getScrapingJobProbUrl(scrapingJobId: number, page: number = 1): Promise<IGetScrapingJobProblResponse[]> {
 		const response = await request({
-			url: `https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/problematic-urls?api_token=${this.token}`,
+			url: `https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/problematic-urls?api_token=${this.token}&page=${page}`,
 			// qs: {
 			// page: number ,
 			// },
@@ -164,7 +194,7 @@ export class Client {
 		return response.data;
 	}
 
-	// DELETE SCRAPING JOBS semi-done
+	// DELETE SCRAPING JOBS
 	public async deleteScrapingJob(scrapingJobId: number): Promise<IDeleteScrapingJobResponse> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}?api_token=${this.token}`,
