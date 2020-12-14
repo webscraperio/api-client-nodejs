@@ -16,6 +16,8 @@ import {IGetSiteMapsResponse} from "../src/interfaces/IGetSiteMapsResponse";
 import {IGetScrapingJobsResponse} from "../src/interfaces/IGetScrapingJobsResponse";
 import {IGetCSVResponse} from "../src/interfaces/IGetCSVResponse";
 import {IGetScrapingJobProblResponse} from "../src/interfaces/IGetScrapingJobProblResponse";
+// import {ISendTotalSitemapPagesResponse} from "../src/interfaces/ISendTotalSitemapPagesResponse";
+// import {ISendScrapingJobsTotalPagesResponse} from "../src/interfaces/ISendScrapingJobsTotalPagesResponse";
 
 const token = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
 
@@ -33,6 +35,7 @@ let scrapedCSV: IGetCSVResponse;
 let getScrapingJobProblURLInfo: IGetScrapingJobProblResponse[];
 let deleteScrapingJob: IDeleteScrapingJobResponse;
 let accountInfo: IGetAccountInfoResponse;
+// let sitemapClientPages: ISendTotalSitemapPagesResponse;
 
 describe("API Client", () => {
 
@@ -42,7 +45,7 @@ describe("API Client", () => {
 	});
 
 	afterEach(async () => {
-		if(sitemapInfoData.id) {
+		if (sitemapInfoData.id) {
 			const scrapingTest = new Client(token);
 			deleteSitemapInfo = await scrapingTest.deleteSitemap(sitemapInfoData.id);
 			expect(deleteSitemapInfo.success).to.be.equal(true);
@@ -66,15 +69,23 @@ describe("API Client", () => {
 	});
 
 	// TESTED
-	// params - page missing, need access to all pages
+	// params - page missing <-- not anymore?
 	it("should get sitemaps", async () => {
+
 		const scrapingTest = new Client(token);
 
+		// first create sitemap
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
-		getSitemapInfo = await scrapingTest.getSitemap(sitemapInfoData.id)
-		getSitemapsInfo = await scrapingTest.getSitemaps();
-		getSitemapsInfo.forEach(elem => expect(elem.id).to.not.be.undefined)
-		getSitemapsInfo.forEach(elem => expect(elem).to.have.deep.members([{id: sitemapInfoData.id}, {name: getSitemapInfo.name}]))
+		// sitemapClientPages = await scrapingTest.sendSitemapTotalPages();
+		getSitemapInfo = await scrapingTest.getSitemap(sitemapInfoData.id);
+
+		// scrapingJobClientPages = await scrapingTest.sendScrapingJobTotalPages();
+		// sitemapClientPages = await scrapingTest.sendSitemapTotalPages();
+		// const totalRecords = sitemapClientPages.total;
+
+		getSitemapsInfo = await scrapingTest.getSitemapsOfPage(2); // default page = 1;
+		getSitemapsInfo.forEach(elem => expect(elem.id).to.not.be.undefined);
+		expect(getSitemapsInfo.find(e => e.id === getSitemapInfo.id)).to.be.ok;
 	});
 
 	// TESTED
@@ -129,21 +140,19 @@ describe("API Client", () => {
 			expect(getScrapingJobInfo.status).to.equal("finished");
 		});
 
-	// TESTED <--- problem with afterEach
-	// params page and sitemap missing, , need access to all pages
+	// TESTED
+	// param page, sitemap
 	it("should get scraping jobs", async () => {
+
 		const scrapingTest = new Client(token);
+
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		scrapingJobInfo = await scrapingTest.createScrapingJob(sitemapInfoData.id);
 
-		getScrapingJobsInfo = await scrapingTest.getScrapingJobs()
-
+		getScrapingJobsInfo = await scrapingTest.getScrapingJobs(); // ( page: default 1, sitemap_id: optional)
 		getScrapingJobsInfo.forEach(elem => expect(elem.id).to.not.be.undefined);
-
-		let expectedID = getScrapingJobsInfo.find(obj => obj.id === scrapingJobInfo.id);
-
+		const expectedID = getScrapingJobsInfo.find(obj => obj.id === scrapingJobInfo.id);
 		expect(expectedID).to.not.be.undefined;
-
 	});
 
 	// TESTED
@@ -178,8 +187,8 @@ describe("API Client", () => {
 		}
 
 		scrapedCSV = await scrapingTest.getCSV(scrapingJobInfo.id);
-		let scrapedCSVstring: string = scrapedCSV.toString();
-		let parsedScrapedCSV = await csv.parse(scrapedCSVstring);
+		const scrapedCSVstring: string = scrapedCSV.toString();
+		const parsedScrapedCSV = await csv.parse(scrapedCSVstring);
 
 		// parsedScrapedCSV.forEach(elem => expect(elem).to.not.be.undefined)
 		// parsedScrapedCSV is an array with csv elements.
@@ -188,18 +197,22 @@ describe("API Client", () => {
 	});
 
 	// TESTED
-	// params page missing
+	// page param
 	it("should get scraping job problematic Urls", async () => {
 		const scrapingTest = new Client(token);
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		scrapingJobInfo = await scrapingTest.createScrapingJob(sitemapInfoData.id);
 		getScrapingJobInfo = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
 
+		// ?
+		/*
 		const startTime = Date.now();
 		while (startTime + 60000 > Date.now() && getScrapingJobInfo.status !== "finished") {
 			getScrapingJobInfo = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
 			await sleep(5000);
 		}
+		 */
+		// ?
 
 		getScrapingJobProblURLInfo = await scrapingTest.getScrapingJobProbUrl(scrapingJobInfo.id);
 
