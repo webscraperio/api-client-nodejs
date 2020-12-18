@@ -8,10 +8,10 @@ export interface IGetScrapingJobsResponse {
 	jobs_scheduled: number;
 	jobs_executed: number;
 	jobs_failed: number;
-	jobs_empty: number
+	jobs_empty: number;
 	stored_record_count: number;
 	request_interval: number;
-	page_load_delay: 2000;
+	page_load_delay: number;
 	driver: string;
 	scheduled: number; // scraping job was started by scheduler
 	time_created: string; // unix timestamp
