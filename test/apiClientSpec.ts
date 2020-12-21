@@ -75,21 +75,6 @@ describe("API Client", () => {
 		expect(getScrapingJobInfo.id).to.equal(scrapingJobInfo.id);
 	});
 
-	it("should get a scraping job ENDED", async () => {
-		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
-		const scrapingJobInfo: ICreateScrapingJobResponse = await scrapingTest.createScrapingJob(sitemapInfoData.id);
-
-		let getScrapingJobInfo: IGetScrapingJobResponse = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
-		const startTime = Date.now();
-		while (startTime + 60000 > Date.now() && getScrapingJobInfo.status !== "finished") {
-			getScrapingJobInfo = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
-			await sleep(2000);
-		}
-
-		expect(getScrapingJobInfo.status).to.not.be.undefined;
-		expect(getScrapingJobInfo.status).to.equal("finished");
-	});
-
 	it("should get scraping jobs", async () => {
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		const scrapingJobInfo: ICreateScrapingJobResponse = await scrapingTest.createScrapingJob(sitemapInfoData.id);
