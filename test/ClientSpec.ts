@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {Client} from "../src/apiClientClasses";
+import {Client} from "../src/Client";
 import {sleep} from "./sleepFunction";
 import fs = require("fs");
 import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobResponse";
