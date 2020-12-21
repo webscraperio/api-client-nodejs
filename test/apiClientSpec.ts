@@ -5,10 +5,7 @@ import fs = require("fs");
 import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobResponse";
 import {ICreateSitemapResponse} from "../src/interfaces/ICreateSitemapResponse";
 import {IGetScrapingJobResponse} from "../src/interfaces/IGetScrapingJobResponse";
-import {IUpdateSitemapResponse} from "../src/interfaces/IUpdateSitemapResponse";
-import {IDeleteSitemap} from "../src/interfaces/IDeleteSitemap";
 import {IGetSitemapResponse} from "../src/interfaces/IGetSitemapResponse";
-import {IDeleteScrapingJobResponse} from "../src/interfaces/IDeleteScrapingJobResponse";
 import {IGetAccountInfoResponse} from "../src/interfaces/IGetAccountInfoResponse";
 import {IGetSitemapsResponse} from "../src/interfaces/IGetSitemapsResponse";
 import {IGetScrapingJobsResponse} from "../src/interfaces/IGetScrapingJobsResponse";
@@ -28,8 +25,8 @@ describe("API Client", () => {
 
 	afterEach(async () => {
 		if (sitemapInfoData) {
-			const deleteSitemapInfo: IDeleteSitemap = await scrapingTest.deleteSitemap(sitemapInfoData.id);
-			expect(deleteSitemapInfo.success).to.be.equal(true);
+			const deleteSitemapInfo: string = await scrapingTest.deleteSitemap(sitemapInfoData.id);
+			expect(deleteSitemapInfo).to.be.equal("ok");
 		}
 		sitemapInfoData = undefined;
 	});
@@ -54,14 +51,14 @@ describe("API Client", () => {
 
 	it("should update the sitemap", async () => {
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
-		const updateSitemapInfo: IUpdateSitemapResponse = await scrapingTest.updateSitemap(sitemapInfoData.id, mySitemap);
-		expect(updateSitemapInfo.data).to.equal("ok");
+		const updateSitemapInfo: string = await scrapingTest.updateSitemap(sitemapInfoData.id, mySitemap);
+		expect(updateSitemapInfo).to.equal("ok");
 	});
 
 	it("should delete the sitemap", async () => {
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
-		const deleteSitemapInfo: IDeleteSitemap = await scrapingTest.deleteSitemap(sitemapInfoData.id);
-		expect(deleteSitemapInfo.data).to.equal("ok");
+		const deleteSitemapInfo: string = await scrapingTest.deleteSitemap(sitemapInfoData.id);
+		expect(deleteSitemapInfo).to.equal("ok");
 		sitemapInfoData = undefined;
 	});
 
@@ -96,7 +93,7 @@ describe("API Client", () => {
 	it("should get scraping jobs", async () => {
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		const scrapingJobInfo: ICreateScrapingJobResponse = await scrapingTest.createScrapingJob(sitemapInfoData.id);
-		const scrapingJobs:IGetScrapingJobsResponse[] = await scrapingTest.getScrapingJobs(); // optional param. page(default -> 1), sitemapId
+		const scrapingJobs:IGetScrapingJobsResponse[] = await scrapingTest.getScrapingJobs(); // optional param. sitemapId, page(default -> 1)
 		expect(scrapingJobs.length).to.be.greaterThan(0);
 		expect(scrapingJobs.find(e => e.id === scrapingJobInfo.id)).to.be.ok;
 	});
@@ -112,11 +109,13 @@ describe("API Client", () => {
 			await sleep(5000);
 		}
 
-		await scrapingTest.getJSON(scrapingJobInfo.id);
-		expect(fs.existsSync("src/tmp/outputJson.json")).to.be.ok;
-		expect(fs.readFileSync("src/tmp/outputJson.json")).to.not.be.undefined;
-		fs.unlinkSync("src/tmp/outputJson.json");
-		expect(fs.existsSync("src/tmp/outputJson.json")).to.not.be.true;
+		const outputfile: string = "outputfile.json";
+
+		await scrapingTest.getJSON(scrapingJobInfo.id, outputfile);
+		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.be.ok;
+		expect(fs.readFileSync(`src/tmp/${outputfile}`)).to.not.be.undefined;
+		fs.unlinkSync(`src/tmp/${outputfile}`);
+		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.not.be.true;
 	});
 
 	it("should download scraped data in CSV format", async () => {
@@ -131,53 +130,55 @@ describe("API Client", () => {
 			await sleep(5000);
 		}
 
-		await scrapingTest.getCSV(scrapingJobInfo.id);
-		expect(fs.existsSync("src/tmp/outputCSV.csv")).to.be.ok;
-		expect(fs.readFileSync("src/tmp/outputCSV.csv")).to.not.be.undefined;
-		fs.unlinkSync("src/tmp/outputCSV.csv");
-		expect(fs.existsSync("src/tmp/outputCSV.csv")).to.not.be.true;
+		const outputfile: string = "outputfile.csv";
+
+		await scrapingTest.getCSV(scrapingJobInfo.id, outputfile);
+		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.be.ok;
+		expect(fs.readFileSync(`src/tmp/${outputfile}`)).to.not.be.undefined;
+		fs.unlinkSync(`src/tmp/${outputfile}`);
+		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.not.be.true;
 	});
 
 	it("should get scraping job problematic Urls", async () => {
 		const time = Date.now();
-		const problematicSitemap:string = `{
-    "_id":"${time}",
-    "startUrl":[
-        "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
-        "https://webscraper.io/test-sites/e-commerce/static/computers/tablets"
-    ],
-    "selectors":[
-        {
-            "id":"selector-test",
-            "type":"SelectorText",
-            "parentSelectors":["_root"],
-            "selector":"body:contains(\\"Computers / Tablets\\") .page-header",
-            "multiple":true,
-            "regex":"",
-            "delay":0
-        }
-    ]
-}`;
+		const problematicSitemap: string = `{
+			"_id":"${time}",
+			"startUrl":[
+				"https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
+				"https://webscraper.io/test-sites/e-commerce/static/computers/tablets"
+			],
+			"selectors":[
+				{
+					"id":"selector-test",
+					"type":"SelectorText",
+					"parentSelectors":["_root"],
+					"selector":"body:contains(\\"Computers / Tablets\\") .page-header",
+					"multiple":true,
+					"regex":"",
+					"delay":0
+				}
+			]
+		}`;
 
 		sitemapInfoData = await scrapingTest.createSitemap(problematicSitemap);
 		const scrapingJobInfo: ICreateScrapingJobResponse = await scrapingTest.createScrapingJob(sitemapInfoData.id);
 		let getScrapingJobInfo: IGetScrapingJobResponse = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
 
 		const startTime = Date.now();
-		while (startTime + 60000 > Date.now() && getScrapingJobInfo.status !== "finished") {
+		while (startTime + 60000 > Date.now() && getScrapingJobInfo.status !== "shelved") {
 			getScrapingJobInfo = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
 			await sleep(5000);
 		}
 
-		const problematicUrls: IGetProblematicUrlsResponse[] = await scrapingTest.getProblematicUrls(scrapingJobInfo.id,1);
+		const problematicUrls: IGetProblematicUrlsResponse[] = await scrapingTest.getProblematicUrls(3291935,1); // scraping job id - 3291935
 		expect(problematicUrls.length).to.be.greaterThan(0);
 	});
 
 	it("should delete the scraping job", async () => {
 		sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
 		const scrapingJobInfo: ICreateScrapingJobResponse = await scrapingTest.createScrapingJob(sitemapInfoData.id);
-		const deleteScrapingJob: IDeleteScrapingJobResponse = await scrapingTest.deleteScrapingJob(scrapingJobInfo.id);
-		expect(deleteScrapingJob.data).to.equal("ok");
+		const deleteScrapingJob: string = await scrapingTest.deleteScrapingJob(scrapingJobInfo.id);
+		expect(deleteScrapingJob).to.equal("ok");
 	});
 
 	it("should return account info", async () => {
