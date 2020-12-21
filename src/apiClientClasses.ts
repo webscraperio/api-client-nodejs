@@ -2,9 +2,6 @@ import * as request from "request-promise-native";
 import {ICreateScrapingJobResponse} from "./interfaces/ICreateScrapingJobResponse";
 import {ICreateSitemapResponse} from "./interfaces/ICreateSitemapResponse";
 import {IGetScrapingJobResponse} from "./interfaces/IGetScrapingJobResponse";
-import {IDeleteSitemap} from "./interfaces/IDeleteSitemap";
-import {IUpdateSitemapResponse} from "./interfaces/IUpdateSitemapResponse";
-import {IDeleteScrapingJobResponse} from "./interfaces/IDeleteScrapingJobResponse";
 import {IGetAccountInfoResponse} from "./interfaces/IGetAccountInfoResponse";
 import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
 import {IGetSitemapResponse} from "./interfaces/IGetSitemapResponse";
@@ -69,7 +66,7 @@ export class Client {
 		return array;
 	}
 
-	public async updateSitemap(sitemapId: number, mySitemap: string): Promise<IUpdateSitemapResponse> {
+	public async updateSitemap(sitemapId: number, mySitemap: string): Promise<string> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
 			method: "PUT",
@@ -79,17 +76,17 @@ export class Client {
 			body: JSON.parse(mySitemap),
 			json: true,
 		});
-		return response;
+		return response.data;
 	}
 
-	public async deleteSitemap(sitemapId: number): Promise<IDeleteSitemap> {
+	public async deleteSitemap(sitemapId: number): Promise<string> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
 			method: "DELETE",
 			json: true,
 		});
 
-		return response;
+		return response.data;
 	}
 
 	public async createScrapingJob(sitemapId: number): Promise<ICreateScrapingJobResponse> {
@@ -119,7 +116,7 @@ export class Client {
 		return response.data;
 	}
 
-	public async getScrapingJobs(page: number = 1, sitemapId?: number): Promise<IGetScrapingJobsResponse[]> {
+	public async getScrapingJobs(sitemapId?: number, page: number = 1): Promise<IGetScrapingJobsResponse[]> {
 
 		const array: IGetScrapingJobsResponse[] = [];
 
@@ -146,7 +143,7 @@ export class Client {
 		return array;
 	}
 
-	public async getJSON(scrapingJobId: number): Promise<void> {
+	public async getJSON(scrapingJobId: number, outputfile: string): Promise<void> {
 		const response = await request(`https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/json?api_token=${this.token}`, {
 			json: true,
 		}, (err, res, body) => {
@@ -154,15 +151,15 @@ export class Client {
 			const strLines = body.toString().split("\n");
 			let linesToArray = `[${strLines}`;
 			linesToArray = linesToArray.replace(/.$/,"]");
-			fs.writeFile("./src/tmp/outputJson.json", linesToArray, () => {
+			fs.writeFile(`./src/tmp/${outputfile}`, linesToArray, () => {
 				if (err) throw err;});
 		});
 	}
 
-	public async getCSV(scrapingJobId: number): Promise<void> {
+	public async getCSV(scrapingJobId: number, outputfile: string): Promise<void> {
 		const response = await request(`https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/csv?api_token=${this.token}`, (err, res, body) => {
 
-			fs.writeFile("./src/tmp/outputCSV.csv", body, () => {
+			fs.writeFile(`./src/tmp/${outputfile}`, body, () => {
 				if (err) throw err;});
 		});
 	}
@@ -194,13 +191,13 @@ export class Client {
 		return array;
 	}
 
-	public async deleteScrapingJob(scrapingJobId: number): Promise<IDeleteScrapingJobResponse> {
+	public async deleteScrapingJob(scrapingJobId: number): Promise<string> {
 		const response = await request({
 			url: `https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}?api_token=${this.token}`,
 			method: "DELETE",
 			json: true,
 		});
-		return response;
+		return response.data;
 	}
 
 	public async getAccountInfo(): Promise<IGetAccountInfoResponse> {
