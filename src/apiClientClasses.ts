@@ -151,7 +151,7 @@ export class Client {
 			const strLines = body.toString().split("\n");
 			let linesToArray = `[${strLines}`;
 			linesToArray = linesToArray.replace(/.$/,"]");
-			fs.writeFile(`./src/tmp/${outputfile}`, linesToArray, () => {
+			fs.writeFile(outputfile, linesToArray, () => {
 				if (err) throw err;});
 		});
 	}
@@ -159,7 +159,7 @@ export class Client {
 	public async getCSV(scrapingJobId: number, outputfile: string): Promise<void> {
 		const response = await request(`https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/csv?api_token=${this.token}`, (err, res, body) => {
 
-			fs.writeFile(`./src/tmp/${outputfile}`, body, () => {
+			fs.writeFile(outputfile, body, () => {
 				if (err) throw err;});
 		});
 	}

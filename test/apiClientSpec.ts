@@ -109,13 +109,13 @@ describe("API Client", () => {
 			await sleep(5000);
 		}
 
-		const outputfile: string = "outputfile.json";
+		const outputfile: string = "./data/outputfile.json";
 
 		await scrapingTest.getJSON(scrapingJobInfo.id, outputfile);
-		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.be.ok;
-		expect(fs.readFileSync(`src/tmp/${outputfile}`)).to.not.be.undefined;
-		fs.unlinkSync(`src/tmp/${outputfile}`);
-		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.not.be.true;
+		expect(fs.existsSync(outputfile)).to.be.ok;
+		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
+		fs.unlinkSync(outputfile);
+		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
 	it("should download scraped data in CSV format", async () => {
@@ -130,13 +130,13 @@ describe("API Client", () => {
 			await sleep(5000);
 		}
 
-		const outputfile: string = "outputfile.csv";
+		const outputfile: string = "./data/outputfile.csv";
 
 		await scrapingTest.getCSV(scrapingJobInfo.id, outputfile);
-		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.be.ok;
-		expect(fs.readFileSync(`src/tmp/${outputfile}`)).to.not.be.undefined;
-		fs.unlinkSync(`src/tmp/${outputfile}`);
-		expect(fs.existsSync(`src/tmp/${outputfile}`)).to.not.be.true;
+		expect(fs.existsSync(outputfile)).to.be.ok;
+		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
+		fs.unlinkSync(outputfile);
+		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
 	it("should get scraping job problematic Urls", async () => {
