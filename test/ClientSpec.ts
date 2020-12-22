@@ -15,7 +15,7 @@ const token = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
 const scrapingTest = new Client(token);
 let mySitemap: string;
 let sitemapInfoData: ICreateSitemapResponse;
-
+// checks if file exists
 if (!fs.existsSync("../data")) {
 	fs.mkdirSync("../data");
 }
