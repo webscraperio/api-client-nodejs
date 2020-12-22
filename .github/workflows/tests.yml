@@ -1,0 +1,23 @@
+name: tests
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Cache node_modules
+        id: node_modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: node_modules
+      - name: Install NPM Dependencies
+        run: npm install --silent | cat
+      - name: run tests
+        run: npm test
