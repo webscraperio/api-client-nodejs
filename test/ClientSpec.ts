@@ -16,6 +16,10 @@ const scrapingTest = new Client(token);
 let mySitemap: string;
 let sitemapInfoData: ICreateSitemapResponse;
 
+if (!fs.existsSync("../data")) {
+	fs.mkdirSync("../data");
+}
+
 describe("API Client", () => {
 
 	beforeEach(() => {
