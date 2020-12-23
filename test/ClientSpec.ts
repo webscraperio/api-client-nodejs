@@ -15,6 +15,10 @@ const token = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
 const scrapingTest = new Client(token);
 let mySitemap: string;
 let sitemapInfoData: ICreateSitemapResponse;
+// check if path exists
+if (!fs.existsSync("./data")) {
+	fs.mkdirSync("./data");
+}
 
 describe("API Client", () => {
 
