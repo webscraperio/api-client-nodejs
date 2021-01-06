@@ -9,33 +9,25 @@ import {IGetScrapingJobsResponse} from "./interfaces/IGetScrapingJobsResponse";
 import {IGetProblematicUrlsResponse} from "./interfaces/IGetProblematicUrlsResponse";
 import {IPaginationResponse} from "./interfaces/IPaginationResponse";
 import fs = require("fs");
+import {HttpClient} from "./HttpClient";
+import {IOptions} from "./interfaces/IOptions";
+import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 
 export class Client {
-	public token: string;
+	private token: string; // private?
+	private httpClient: HttpClient;
 
-	constructor(token: string) {
-		this.token = token;
+	constructor(options: IOptions) {
+		this.token = options.token;
+		this.httpClient = new HttpClient(options);
 	}
 
-	public async createSitemap(mySitemap: string): Promise<ICreateSitemapResponse> {
-		const response = await request({
-			url: `https://api.webscraper.io/api/v1/sitemap?api_token=${this.token}`,
-			method: "POST",
-			headers: {
-				"content-type": "application/json",
-			},
-			body: JSON.parse(mySitemap),
-			json: true,
-		});
-		return response.data;
+	public createSitemap(sitemap: string): void {
+		const response = this.httpClient.post("sitemap", sitemap);
 	}
 
 	public async getSitemap(sitemapId: number): Promise<IGetSitemapResponse> {
-		const response = await request({
-			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
-			method: "GET",
-			json: true,
-		});
+		const response:IWebScraperResponse<IGetSitemapResponse> = await this.httpClient.get(`sitemap/${sitemapId}`);
 		return response.data;
 	}
 
@@ -66,27 +58,12 @@ export class Client {
 		return array;
 	}
 
-	public async updateSitemap(sitemapId: number, mySitemap: string): Promise<string> {
-		const response = await request({
-			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
-			method: "PUT",
-			headers: {
-				"content-type": "application/json",
-			},
-			body: JSON.parse(mySitemap),
-			json: true,
-		});
-		return response.data;
+	public updateSitemap(sitemapId: number, sitemap: string): void {
+		const response = this.httpClient.put(`sitemap/${sitemapId}`, sitemap);
 	}
 
-	public async deleteSitemap(sitemapId: number): Promise<string> {
-		const response = await request({
-			url: `https://api.webscraper.io/api/v1/sitemap/${sitemapId}?api_token=${this.token}`,
-			method: "DELETE",
-			json: true,
-		});
-
-		return response.data;
+	public deleteSitemap(sitemapId: number): void {
+		const response = this.httpClient.delete(`sitemap/${sitemapId}`);
 	}
 
 	public async createScrapingJob(sitemapId: number): Promise<ICreateScrapingJobResponse> {
