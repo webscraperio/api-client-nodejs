@@ -113,22 +113,15 @@ export class Client {
 			url: `scraping-job/${scrapingJobId}/json`,
 			saveTo: fileName,
 		});
-		// const ggeg = 1;
-		// const strLines = response.toString().split("\n");
-		// let linesToArray = `[${strLines}`;
-		// linesToArray = linesToArray.replace(/.$/, "]");
-		// fs.writeFile(outputfile, linesToArray, () => {
-		// 	if (Error) throw Error;
-		// });
 	}
 
-	// public async getCSV(scrapingJobId: number, outputfile: string): Promise<void> {
-	// 	await this.httpClient.requestRaw("GET", `scraping-job/${scrapingJobId}/csv`);
-	//
-	// 	// fs.writeFile(outputfile, filecontent, () => {
-	// 	// 	if (Error) throw Error;
-	// 	// });
-	// }
+	public async getCSV(scrapingJobId: number, fileName: string): Promise<void> {
+		await this.httpClient.requestRaw({
+			method: "GET",
+			url: `scraping-job/${scrapingJobId}/csv`,
+			saveTo: fileName,
+		});
+	}
 
 	/*
 	public async getProblematicUrls(scrapingJobId: number, page: number = 1): Promise<IGetProblematicUrlsResponse[]> {

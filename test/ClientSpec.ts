@@ -6,6 +6,7 @@ import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobRe
 import {IGetScrapingJobResponse} from "../src/interfaces/IGetScrapingJobResponse";
 import {IGetAccountInfoResponse} from "../src/interfaces/IGetAccountInfoResponse";
 import fs = require("fs");
+import {sleep} from "./sleepFunction";
 
 const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
 
@@ -89,18 +90,18 @@ describe("API Client", () => {
 		});
 	*/
 	it("should download scraped data in json format", async () => {
-		// createSitemapResonse = await client.createSitemap(sitemap);
-		// const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
-		// let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-		//
-		// const startTime = Date.now();
-		// while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
-		// 	getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-		// 	await sleep(5000);
-		// }
+		createSitemapResonse = await client.createSitemap(sitemap);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
+		let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+
+		const startTime = Date.now();
+		while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
+			getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+			await sleep(5000);
+		}
 
 		const outputfile: string = "./data/outputfile.json";
-		// fs.createWriteStream(outputfile);
+
 		await client.getJSON(3402771, outputfile);
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
@@ -108,25 +109,25 @@ describe("API Client", () => {
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
-	// it("should download scraped data in CSV format", async () => {
-	// 	createSitemapResonse = await client.createSitemap(sitemap);
-	// 	const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
-	// 	let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-	//
-	// 	const startTime = Date.now();
-	// 	while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
-	// 		getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-	// 		await sleep(5000);
-	// 	}
-	//
-	// 	const outputfile: string = "./data/outputfile.csv";
-	//
-	// 	await client.getCSV(createScrapingJobResponse.id, outputfile);
-	// 	expect(fs.existsSync(outputfile)).to.be.ok;
-	// 	expect(fs.readFileSync(outputfile)).to.not.be.undefined;
-	// 	fs.unlinkSync(outputfile);
-	// 	expect(fs.existsSync(outputfile)).to.not.be.true;
-	// });
+	it("should download scraped data in CSV format", async () => {
+		createSitemapResonse = await client.createSitemap(sitemap);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
+		let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+
+		const startTime = Date.now();
+		while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
+			getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+			await sleep(5000);
+		}
+
+		const outputfile: string = "./data/outputfile.csv";
+
+		await client.getCSV(getScrapingJobResponse.id, outputfile);
+		expect(fs.existsSync(outputfile)).to.be.ok;
+		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
+		fs.unlinkSync(outputfile);
+		expect(fs.existsSync(outputfile)).to.not.be.true;
+	});
 	/*
 			it("should get scraping job problematic Urls", async () => {
 				const time = Date.now();

@@ -35,8 +35,8 @@ export class HttpClient {
 	private async request<TDataStyle>(method: string, uri: string, data?: string): Promise<IWebScraperResponse<TDataStyle>> {
 
 		const response: IWebScraperResponse<TDataStyle> = await this.requestRaw({
-			method,
 			url: uri,
+			method,
 			data,
 		});
 
@@ -67,35 +67,27 @@ export class HttpClient {
 		return response;
 	}
 
-	// Promise<IWebScraperResponse<TDataStyle>>
 	public requestRaw<TDataStyle>(requestOptions: IRequestRawOptions): Promise<IWebScraperResponse<TDataStyle>> {
 
 		const uri = requestOptions.url;
 		const usedMethod = requestOptions.method;
 
-		const usedHeaders: { [s: string]: string} = {
-			"Accept": "application/json, text/javascript, */*",
-			"User-Agent": "WebScraper.io PHP SDK v1.0",
-		};
+		let usedHeaders; // : { [s: string]: string}
 
-		// if (data === undefined) {
-		// 	usedHeaders = {
-		// 		"Accept": "application/json, text/javascript, */*",
-		// 		"User-Agent": "WebScraper.io PHP SDK v1.0",
-		// 		// "Content-disposition": "attachment; filename=./data/outputfile.json",
-		// 		// "Content-Type": "application//json",
-		// 	};
-		// 	Data = "";
-		// } else {
-		// 	usedHeaders = {
-		// 		"Accept": "application/json, text/javascript, */*",
-		// 		"User-Agent": "WebScraper.io PHP SDK v1.0",
-		// 		"Content-Type": "application//json",
-		// 		// "Accept-Encoding": "gzip",
-		// 		"Content-Length": Buffer.byteLength(Data),
-		// 		// "Content-disposition": "attachment; filename=./data/outputfile.json",
-		// 	};
-		// }
+		if (requestOptions.data) {
+			usedHeaders = {
+				"Accept": "application/json, text/javascript, */*",
+				"User-Agent": "WebScraper.io PHP SDK v1.0",
+				"Content-Type": "application//json",
+				"Content-Length": Buffer.byteLength(requestOptions.data),
+			};
+		} else {
+			usedHeaders = {
+				"Accept": "application/json, text/javascript, */*",
+				"User-Agent": "WebScraper.io PHP SDK v1.0",
+			};
+			requestOptions.data = "";
+		}
 
 		const requestUrl = url.parse(url.format({
 			protocol: "https",
@@ -148,8 +140,7 @@ export class HttpClient {
 			if (requestOptions.saveTo) {
 				file = fs.createWriteStream(requestOptions.saveTo);
 			}
-
-			const request = http.get(options, (response) => {
+			const request = http.request(options, (response) => {
 
 				if (requestOptions.saveTo) {
 
@@ -164,8 +155,8 @@ export class HttpClient {
 
 					let responseData: string = "";
 
-					response.setEncoding('utf8');
-					response.on('data', (chunk) => {
+					response.setEncoding("utf8");
+					response.on("data", (chunk) => {
 						responseData += chunk;
 					});
 
@@ -173,13 +164,14 @@ export class HttpClient {
 
 						const dataObj = JSON.parse(responseData);
 
-						resolve(dataObj.data);
+						resolve(dataObj);
 
 						const a  = 1;
 					});
 				}
 			});
-
+			request.write(requestOptions.data);
+			request.end();
 		});
 
 	}
