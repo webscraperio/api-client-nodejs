@@ -107,8 +107,12 @@ export class Client {
 			return array;
 		}
 	*/
-	public async getJSON(scrapingJobId: number): Promise<void> {
-		await this.httpClient.requestRaw("GET", `scraping-job/${scrapingJobId}/json`);
+	public async getJSON(scrapingJobId: number, fileName: string): Promise<void> {
+		await this.httpClient.requestRaw({
+			method: "GET",
+			url: `scraping-job/${scrapingJobId}/json`,
+			saveTo: fileName,
+		});
 		// const ggeg = 1;
 		// const strLines = response.toString().split("\n");
 		// let linesToArray = `[${strLines}`;
@@ -118,13 +122,13 @@ export class Client {
 		// });
 	}
 
-	public async getCSV(scrapingJobId: number, outputfile: string): Promise<void> {
-		await this.httpClient.requestRaw("GET", `scraping-job/${scrapingJobId}/csv`);
-
-		// fs.writeFile(outputfile, filecontent, () => {
-		// 	if (Error) throw Error;
-		// });
-	}
+	// public async getCSV(scrapingJobId: number, outputfile: string): Promise<void> {
+	// 	await this.httpClient.requestRaw("GET", `scraping-job/${scrapingJobId}/csv`);
+	//
+	// 	// fs.writeFile(outputfile, filecontent, () => {
+	// 	// 	if (Error) throw Error;
+	// 	// });
+	// }
 
 	/*
 	public async getProblematicUrls(scrapingJobId: number, page: number = 1): Promise<IGetProblematicUrlsResponse[]> {

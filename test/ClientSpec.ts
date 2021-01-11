@@ -101,7 +101,7 @@ describe("API Client", () => {
 
 		const outputfile: string = "./data/outputfile.json";
 		// fs.createWriteStream(outputfile);
-		await client.getJSON(3402771);
+		await client.getJSON(3402771, outputfile);
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
 		fs.unlinkSync(outputfile);

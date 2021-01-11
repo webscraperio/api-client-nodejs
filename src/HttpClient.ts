@@ -3,6 +3,14 @@ import url = require("url");
 import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 import * as fs from "fs";
+import {WriteStream} from "fs";
+
+interface IRequestRawOptions {
+	url: string;
+	method: string;
+	saveTo?: string;
+	data?: any;
+}
 
 export class HttpClient {
 
@@ -26,7 +34,11 @@ export class HttpClient {
 
 	private async request<TDataStyle>(method: string, uri: string, data?: string): Promise<IWebScraperResponse<TDataStyle>> {
 
-		const response: IWebScraperResponse<TDataStyle> = await this.requestRaw(method, uri, data);
+		const response: IWebScraperResponse<TDataStyle> = await this.requestRaw({
+			method,
+			url: uri,
+			data,
+		});
 
 		if (!response.success) {
 			throw Error;
@@ -56,30 +68,34 @@ export class HttpClient {
 	}
 
 	// Promise<IWebScraperResponse<TDataStyle>>
-	public requestRaw<TDataStyle>(method: any, uri: string, data?: any): Promise<IWebScraperResponse<TDataStyle>> {
-		const ggeg = 1;
-		const usedMethod = method;
-		let usedHeaders;
-		let Data = data;
+	public requestRaw<TDataStyle>(requestOptions: IRequestRawOptions): Promise<IWebScraperResponse<TDataStyle>> {
 
-		if (data === undefined) {
-			usedHeaders = {
-				"Accept": "application/json, text/javascript, */*",
-				"User-Agent": "WebScraper.io PHP SDK v1.0",
-				// "Content-disposition": "attachment; filename=./data/outputfile.json",
-				// "Content-Type": "application//json",
-			};
-			Data = "";
-		} else {
-			usedHeaders = {
-				"Accept": "application/json, text/javascript, */*",
-				"User-Agent": "WebScraper.io PHP SDK v1.0",
-				"Content-Type": "application//json",
-				// "Accept-Encoding": "gzip",
-				"Content-Length": Buffer.byteLength(Data),
-				// "Content-disposition": "attachment; filename=./data/outputfile.json",
-			};
-		}
+		const uri = requestOptions.url;
+		const usedMethod = requestOptions.method;
+
+		const usedHeaders: { [s: string]: string} = {
+			"Accept": "application/json, text/javascript, */*",
+			"User-Agent": "WebScraper.io PHP SDK v1.0",
+		};
+
+		// if (data === undefined) {
+		// 	usedHeaders = {
+		// 		"Accept": "application/json, text/javascript, */*",
+		// 		"User-Agent": "WebScraper.io PHP SDK v1.0",
+		// 		// "Content-disposition": "attachment; filename=./data/outputfile.json",
+		// 		// "Content-Type": "application//json",
+		// 	};
+		// 	Data = "";
+		// } else {
+		// 	usedHeaders = {
+		// 		"Accept": "application/json, text/javascript, */*",
+		// 		"User-Agent": "WebScraper.io PHP SDK v1.0",
+		// 		"Content-Type": "application//json",
+		// 		// "Accept-Encoding": "gzip",
+		// 		"Content-Length": Buffer.byteLength(Data),
+		// 		// "Content-disposition": "attachment; filename=./data/outputfile.json",
+		// 	};
+		// }
 
 		const requestUrl = url.parse(url.format({
 			protocol: "https",
@@ -98,7 +114,7 @@ export class HttpClient {
 			headers: usedHeaders,
 		};
 
-		return new Promise(resolve => {
+		return new Promise( (resolve, reject )=> {
 
 			// 	const req = http.request(options, res => {
 			// 		const fefef = 1;
@@ -128,11 +144,43 @@ export class HttpClient {
 			// 	req.end();
 			// });
 
-			const file = fs.createWriteStream("./data/outputfile.json");
+			let file:  WriteStream;
+			if (requestOptions.saveTo) {
+				file = fs.createWriteStream(requestOptions.saveTo);
+			}
+
 			const request = http.get(options, (response) => {
-				response.pipe(file);
+
+				if (requestOptions.saveTo) {
+
+					response.pipe(file);
+
+					file.on("finish", () => {
+						file.close();
+						resolve(undefined);
+					});
+
+				} else {
+
+					let responseData: string = "";
+
+					response.setEncoding('utf8');
+					response.on('data', (chunk) => {
+						responseData += chunk;
+					});
+
+					response.on("end", () => {
+
+						const dataObj = JSON.parse(responseData);
+
+						resolve(dataObj.data);
+
+						const a  = 1;
+					});
+				}
 			});
 
-		}
+		});
 
 	}
+}
