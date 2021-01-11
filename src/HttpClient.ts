@@ -1,10 +1,8 @@
-import https = require("https");
+import http = require("https");
 import url = require("url");
-
 import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
-import getError = Mocha.utils.getError;
-import * as querystring from "querystring";
+import * as fs from "fs";
 
 export class HttpClient {
 
@@ -14,7 +12,7 @@ export class HttpClient {
 
 	constructor(options: IOptions) {
 		this.token = options.token;
-		this.baseUri =  options.baseUri;
+		this.baseUri = options.baseUri;
 
 		// 	$this->useBackoffSleep = isset($options['use_backoff_sleep']) ? $options['use_backoff_sleep'] : true;
 		// this.useBackoffSleep = true;
@@ -28,7 +26,8 @@ export class HttpClient {
 
 	private async request<TDataStyle>(method: string, uri: string, data?: string): Promise<IWebScraperResponse<TDataStyle>> {
 
-		const response:IWebScraperResponse<TDataStyle> = await this.requestRaw(method, uri, data);
+		const response: IWebScraperResponse<TDataStyle> = await this.requestRaw(method, uri, data);
+
 		if (!response.success) {
 			throw Error;
 		}
@@ -36,48 +35,51 @@ export class HttpClient {
 		return response;
 	}
 
-	// public get<TDataStyle>(uri: string): IWebScraperResponse<TDataStyle> {
-	// 	const response: IWebScraperResponse<TDataStyle> = this.request("GET", uri);
-	// 	return response;
-	// }
-
 	public async get<TDataStyle>(uri: string): Promise<IWebScraperResponse<TDataStyle>> {
 		const response: IWebScraperResponse<TDataStyle> = await this.request("GET", uri);
 		return response;
 	}
 
-	public post(uri: string, data: string): void {
-		const response =  this.request("POST", uri, data);
+	public async post<TDataStyle>(uri: string, data: string): Promise<IWebScraperResponse<TDataStyle>> {
+		const response: IWebScraperResponse<TDataStyle> = await this.request("POST", uri, data);
+		return response;
 	}
 
-	public put(uri: string, data : string): void {
-		const response =  this.request("PUT", uri, data);
+	public async put<TDataStyle>(uri: string, data: string): Promise<IWebScraperResponse<TDataStyle>> {
+		const response: IWebScraperResponse<TDataStyle> = await this.request("PUT", uri, data);
+		return response;
 	}
 
-	public delete(uri: string): void {
-		const response =  this.request("DELETE", uri);
+	public async delete<TDataStyle>(uri: string): Promise<IWebScraperResponse<TDataStyle>> {
+		const response: IWebScraperResponse<TDataStyle> = await this.request("DELETE", uri);
+		return response;
 	}
 
-	public requestRaw<TDataStyle>(method: any, uri: string, data?: any ): Promise<IWebScraperResponse<TDataStyle>> {
-
+	// Promise<IWebScraperResponse<TDataStyle>>
+	public requestRaw<TDataStyle>(method: any, uri: string, data?: any): Promise<IWebScraperResponse<TDataStyle>> {
+		const ggeg = 1;
 		const usedMethod = method;
 		let usedHeaders;
 		let Data = data;
 
 		if (data === undefined) {
-			usedHeaders	= {
+			usedHeaders = {
 				"Accept": "application/json, text/javascript, */*",
 				"User-Agent": "WebScraper.io PHP SDK v1.0",
+				// "Content-disposition": "attachment; filename=./data/outputfile.json",
+				// "Content-Type": "application//json",
 			};
 			Data = "";
-			} else {
-				usedHeaders	= {
-					"Accept": "application/json, text/javascript, */*",
-					"User-Agent": "WebScraper.io PHP SDK v1.0",
-					"Content-Type": "application//json",
-					"Content-Length": Buffer.byteLength(Data),
-				};
-			}
+		} else {
+			usedHeaders = {
+				"Accept": "application/json, text/javascript, */*",
+				"User-Agent": "WebScraper.io PHP SDK v1.0",
+				"Content-Type": "application//json",
+				// "Accept-Encoding": "gzip",
+				"Content-Length": Buffer.byteLength(Data),
+				// "Content-disposition": "attachment; filename=./data/outputfile.json",
+			};
+		}
 
 		const requestUrl = url.parse(url.format({
 			protocol: "https",
@@ -90,28 +92,47 @@ export class HttpClient {
 
 		const options = {
 			hostname: requestUrl.hostname,
-			timeout: 5.0,
+			timeout: 600.0, // 5
 			path: requestUrl.path,
 			method: usedMethod,
 			headers: usedHeaders,
 		};
 
-			return new Promise(resolve => {
-				const req = https.request(options, res => {
-					res.setEncoding("utf8");
-				});
+		return new Promise(resolve => {
 
-				req.on("response", response => {
-					let body = "";
-					response.on("data", chunk => {
-						body += chunk;
-					});
-					response.on("end",  () => {
-						resolve(JSON.parse(body));
-					});
-				});
-				req.end();
-			} );
+			// 	const req = http.request(options, res => {
+			// 		const fefef = 1;
+			// 		if (res.statusCode !== 200) {
+			// 			throw Error;
+			// 		}
+			//
+			// 		const file = fs.createWriteStream("./data/outputfile.json");
+			// 		res.pipe(file);
+			// 		// res.setEncoding("utf8");
+			// 		const body = "";
+			// 		//
+			// 		// res.on("data", (chunk) => {
+			// 		// 	body += chunk;
+			// 		// });
+			// 		//
+			// 		// res.on("end", () => {
+			// 		//
+			// 		//
+			// 		// 	fs.writeFile("./data/outputfile.json", body, () => {
+			// 		// 		if (Error) throw Error;
+			// 		// 	});
+			// 		//
+			// 		// 	resolve(JSON.parse(body));
+			// 	});
+			// 	// req.write(Data);
+			// 	req.end();
+			// });
+
+			const file = fs.createWriteStream("./data/outputfile.json");
+			const request = http.get(options, (response) => {
+				response.pipe(file);
+			});
+
+		}
+
 	}
-
-}
