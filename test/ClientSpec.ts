@@ -7,6 +7,9 @@ import {IGetScrapingJobResponse} from "../src/interfaces/IGetScrapingJobResponse
 import {IGetAccountInfoResponse} from "../src/interfaces/IGetAccountInfoResponse";
 import fs = require("fs");
 import {sleep} from "./sleepFunction";
+import {IGetSitemapsResponse} from "../src/interfaces/IGetSitemapsResponse";
+import {IGetScrapingJobsResponse} from "../src/interfaces/IGetScrapingJobsResponse";
+import {IGetProblematicUrlsResponse} from "../src/interfaces/IGetProblematicUrlsResponse";
 
 const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
 
@@ -29,13 +32,13 @@ describe("API Client", () => {
 		sitemap = `{"_id":"${time}","startUrl":["https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops"],"selectors":[{"id":"element","type":"SelectorElement","parentSelectors":["_root"],"selector":"div.col-sm-4","multiple":true,"delay":0},{"id":"product_name","type":"SelectorText","parentSelectors":["element"],"selector":"abc","multiple":false,"regex":"","delay":0},{"id":"product_price","type":"SelectorText","parentSelectors":["element"],"selector":"h4.pull-right","multiple":false,"regex":"","delay":0}]}`;
 	});
 
-	// afterEach(async () => {
-	// 	if (createSitemapResonse) {
-	// 		const deleteAfterEachSitemapResponse: string = await client.deleteSitemap(createSitemapResonse.id);
-	// 		expect(deleteAfterEachSitemapResponse).to.be.equal("ok");
-	// 	}
-	// 	createSitemapResonse = undefined;
-	// });
+	afterEach(async () => {
+		if (createSitemapResonse) {
+			const deleteAfterEachSitemapResponse: string = await client.deleteSitemap(createSitemapResonse.id);
+			expect(deleteAfterEachSitemapResponse).to.be.equal("ok");
+		}
+		createSitemapResonse = undefined;
+	});
 
 	it("should create a sitemap", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
@@ -48,12 +51,12 @@ describe("API Client", () => {
 		expect(getSitemapResponse.id).to.be.equal(createSitemapResonse.id);
 	});
 
-	// it("should get sitemaps", async () => {
-	// 	sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
-	// 	const sitemaps:IGetSitemapsResponse[] = await scrapingTest.getSitemaps(); // optional param. page(def -> 1)
-	// 	expect(sitemaps.length).to.be.greaterThan(0);
-	// 	expect(sitemaps.find(e => e.id === sitemapInfoData.id)).to.be.ok;
-	// });
+	it("should get sitemaps", async () => {
+		createSitemapResonse = await client.createSitemap(sitemap);
+		const sitemaps:IGetSitemapsResponse[] = await client.getSitemaps(); // optional param. page(def -> 1)
+		expect(sitemaps.length).to.be.greaterThan(0);
+		expect(sitemaps.find(e => e.id === createSitemapResonse.id)).to.be.ok;
+	});
 
 	it("should update the sitemap", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
@@ -80,15 +83,15 @@ describe("API Client", () => {
 		const getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
 		expect(getScrapingJobResponse.id).to.equal(createScrapingJobResponse.id);
 	});
-	/*
-		it("should get scraping jobs", async () => {
-			sitemapInfoData = await scrapingTest.createSitemap(mySitemap);
-			const scrapingJobInfo: ICreateScrapingJobResponse = await scrapingTest.createScrapingJob(sitemapInfoData.id);
-			const scrapingJobs:IGetScrapingJobsResponse[] = await scrapingTest.getScrapingJobs(); // optional param. sitemapId, page(default -> 1)
-			expect(scrapingJobs.length).to.be.greaterThan(0);
-			expect(scrapingJobs.find(e => e.id === scrapingJobInfo.id)).to.be.ok;
-		});
-	*/
+
+	it("should get scraping jobs", async () => {
+		createSitemapResonse = await client.createSitemap(sitemap);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
+		const scrapingJobs: IGetScrapingJobsResponse[] = await client.getScrapingJobs(); // optional param. sitemapId, page(default -> 1)
+		expect(scrapingJobs.length).to.be.greaterThan(0);
+		expect(scrapingJobs.find(e => e.id === createScrapingJobResponse.id)).to.be.ok;
+	});
+
 	it("should download scraped data in json format", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
 		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
@@ -128,42 +131,42 @@ describe("API Client", () => {
 		fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
-	/*
-			it("should get scraping job problematic Urls", async () => {
-				const time = Date.now();
-				const problematicSitemap: string = `{
-								"_id":"${time}",
-								"startUrl":[
-									"https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
-									"https://webscraper.io/test-sites/e-commerce/static/computers/tablets"
-								],
-								"selectors":[
-									{
-										"id":"selector-test",
-										"type":"SelectorText",
-										"parentSelectors":["_root"],
-										"selector":"body:contains(\\"Computers / Tablets\\") .page-header",
-										"multiple":true,
-										"regex":"",
-										"delay":0
-									}
-								]
-							}`;
 
-				sitemapInfoData = await scrapingTest.createSitemap(problematicSitemap);
-				const scrapingJobInfo: ICreateScrapingJobResponse = await scrapingTest.createScrapingJob(sitemapInfoData.id);
-				let getScrapingJobInfo: IGetScrapingJobResponse = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
+	// it("should get scraping job problematic Urls", async () => {
+	// 	// const time = Date.now();
+	// 	// const problematicSitemap: string = `{
+	// 	// 				"_id":"${time}",
+	// 	// 				"startUrl":[
+	// 	// 					"https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
+	// 	// 					"https://webscraper.io/test-sites/e-commerce/static/computers/tablets"
+	// 	// 				],
+	// 	// 				"selectors":[
+	// 	// 					{
+	// 	// 						"id":"selector-test",
+	// 	// 						"type":"SelectorText",
+	// 	// 						"parentSelectors":["_root"],
+	// 	// 						"selector":"body:contains(\\"Computers / Tablets\\") .page-header",
+	// 	// 						"multiple":true,
+	// 	// 						"regex":"",
+	// 	// 						"delay":0
+	// 	// 					}
+	// 	// 				]
+	// 	// 			}`;
+	// 	//
+	// 	// createSitemapResonse = await client.createSitemap(problematicSitemap);
+	// 	// const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
+	// 	// let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+	// 	//
+	// 	// const startTime = Date.now();
+	// 	// while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "shelved") {
+	// 	// 	getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+	// 	// 	await sleep(5000);
+	// 	// }
+	//
+	// 	const problematicUrls: IGetProblematicUrlsResponse[] = await client.getProblematicUrls(getScrapingJobResponse.id);
+	// 	expect(problematicUrls.length).to.be.greaterThan(0);
+	// });
 
-				const startTime = Date.now();
-				while (startTime + 60000 > Date.now() && getScrapingJobInfo.status !== "shelved") {
-					getScrapingJobInfo = await scrapingTest.getScrapingJob(scrapingJobInfo.id);
-					await sleep(5000);
-				}
-
-				const problematicUrls: IGetProblematicUrlsResponse[] = await scrapingTest.getProblematicUrls(3291935, 1); // scraping job id - 3291935
-				expect(problematicUrls.length).to.be.greaterThan(0);
-			});
-	*/
 	it("should delete the scraping job", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
 		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);

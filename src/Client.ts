@@ -6,6 +6,11 @@ import {IGetSitemapResponse} from "./interfaces/IGetSitemapResponse";
 import {HttpClient} from "./HttpClient";
 import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
+import {IPaginationResponse} from "./interfaces/IPaginationResponse";
+import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
+import {IRequestOptions} from "./interfaces/IRequestOptions";
+import {IGetScrapingJobsResponse} from "./interfaces/IGetScrapingJobsResponse";
+import {IGetProblematicUrlsResponse} from "./interfaces/IGetProblematicUrlsResponse";
 
 export class Client {
 	private token: string; // private?
@@ -26,34 +31,36 @@ export class Client {
 		return response.data;
 	}
 
-	/*
-		public async getSitemaps(page: number = 1): Promise<IGetSitemapsResponse[]> {
+	public async getSitemaps(page: number = 1): Promise<IGetSitemapsResponse[]> {
 
-			const array: IGetSitemapsResponse[] = [];
+		const array: IGetSitemapsResponse[] = [];
 
-			let response = await request({
-				url: `https://api.webscraper.io/api/v1/sitemaps?api_token=${this.token}&page=${page}`,
-				method: "GET",
-				json: true,
-			}) as IPaginationResponse<IGetSitemapsResponse[]>;
+		const response: IWebScraperResponse<IGetSitemapsResponse[]> = await this.httpClient.request({
+			url: "sitemaps",
+			method: "GET",
+			query: {
+				page,
+			},
+		});
 
-			response.data.forEach(e => array.push(e));
-			if (page < response.last_page) {
-				page++;
-				while (page <= response.last_page) {
-					response = await request({
-						url: `https://api.webscraper.io/api/v1/sitemaps?api_token=${this.token}&page=${page}`,
-						method: "GET",
-						json: true,
-					}) as IPaginationResponse<IGetSitemapsResponse[]>;
-					response.data.forEach(e => array.push(e));
-					page++;
-				}
-			}
+		response.data.forEach(e => array.push(e));
+		// if (page < response.last_page) {
+		// 	page++;
+		// 	while (page <= response.last_page) {
+		// 		 const responseAll_one: IWebScraperResponse<IPaginationResponse<IGetSitemapsResponse[]>> = await this.httpClient.request({
+		// 			url: "sitemaps",
+		// 			method: "GET",
+		// 			page,
+		// 		});
+		// 		response = responseAll_one.data;
+		// 		response.data.forEach(e => array.push(e));
+		// 		page++;
+		// 	}
+		// }
 
-			return array;
-		}
-	*/
+		return array;
+	}
+
 	public async updateSitemap(sitemapId: number, sitemap: string): Promise<string> {
 		const response: IWebScraperResponse<string> = await this.httpClient.put(`sitemap/${sitemapId}`, sitemap);
 		return response.data;
@@ -79,36 +86,25 @@ export class Client {
 		return response.data;
 	}
 
-	/*
-		public async getScrapingJobs(sitemapId?: number, page: number = 1): Promise<IGetScrapingJobsResponse[]> {
+	public async getScrapingJobs(sitemapId?: number, page: number = 1): Promise<IGetScrapingJobsResponse[]> {
 
-			const array: IGetScrapingJobsResponse[] = [];
+	const array: IGetScrapingJobsResponse[] = [];
 
-			let response = await request({
-				url: `https://api.webscraper.io/api/v1/scraping-jobs?api_token=${this.token}&page=${page}&sitemap_id=${sitemapId}`,
-				method: "GET",
-				json: true,
-			}) as IPaginationResponse<IGetScrapingJobsResponse[]>;
+	const response: IWebScraperResponse<IGetScrapingJobsResponse[]> = await this.httpClient.request({
+		url: "scraping-jobs",
+		method: "GET",
+		query:{
+			page,
+			sitemap_id: sitemapId,
+		},
+	});
+		response.data.forEach(e => array.push(e));
 
-			response.data.forEach(e => array.push(e));
-			if (page < response.last_page) {
-				page++;
-				while (page <= response.last_page) {
-					response = await request({
-						url: `https://api.webscraper.io/api/v1/scraping-jobs?api_token=${this.token}&page=${page}&sitemap_id=${sitemapId}`,
-						method: "GET",
-						json: true,
-					}) as IPaginationResponse<IGetScrapingJobsResponse[]>;
-					response.data.forEach(e => array.push(e));
-					page++;
-				}
-			}
+		return array;
+	}
 
-			return array;
-		}
-	*/
 	public async getJSON(scrapingJobId: number, fileName: string): Promise<void> {
-		await this.httpClient.requestRaw({
+		await this.httpClient.request({
 			method: "GET",
 			url: `scraping-job/${scrapingJobId}/json`,
 			saveTo: fileName,
@@ -116,41 +112,29 @@ export class Client {
 	}
 
 	public async getCSV(scrapingJobId: number, fileName: string): Promise<void> {
-		await this.httpClient.requestRaw({
+		await this.httpClient.request({
 			method: "GET",
 			url: `scraping-job/${scrapingJobId}/csv`,
 			saveTo: fileName,
 		});
 	}
 
-	/*
 	public async getProblematicUrls(scrapingJobId: number, page: number = 1): Promise<IGetProblematicUrlsResponse[]> {
 
 		const array: IGetProblematicUrlsResponse[] = [];
 
-		let response = await request({
-			url: `https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/problematic-urls?api_token=${this.token}&page=${page}`,
+		const response: IWebScraperResponse<IGetProblematicUrlsResponse[]> = await this.httpClient.request({
+			url: `scraping-job/${scrapingJobId}/problematic-urls`,
 			method: "GET",
-			json: true,
-		}) as IPaginationResponse<IGetProblematicUrlsResponse[]>;
+			query: {
+				page,
+			},
+		});
 
 		response.data.forEach(e => array.push(e));
-		if (page < response.last_page) {
-			page++;
-			while (page <= response.last_page) {
-				response = await request({
-					url: `https://api.webscraper.io/api/v1/scraping-job/${scrapingJobId}/problematic-urls?api_token=${this.token}&page=${page}`,
-					method: "GET",
-					json: true,
-				}) as IPaginationResponse<IGetProblematicUrlsResponse[]>;
-				response.data.forEach(e => array.push(e));
-				page++;
-			}
-		}
-
 		return array;
 	}
-	*/
+
 	public async deleteScrapingJob(scrapingJobId: number): Promise<string> {
 		const response: IWebScraperResponse<string> = await this.httpClient.delete(`scraping-job/${scrapingJobId}`);
 		return response.data;
