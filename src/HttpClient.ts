@@ -17,100 +17,106 @@ export class HttpClient {
 		this.baseUri = options.baseUri;
 	}
 
-	public async get<TDataStyle>(uri: string): Promise<IWebScraperResponse<TDataStyle>> {
-		const response: IWebScraperResponse<TDataStyle> = await this.request(({
-			url: uri,
-			method: "GET",
-		}));
+	private async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+
+		let response: IWebScraperResponse<TData>;
+
+		try {
+			response = await this.requestRaw({
+				method: requestOptions.method,
+				url: requestOptions.url,
+				data: requestOptions.data,
+			});
+		} catch (e) {
+			throw new Error(`Web Scraper API Exception: ${e}`);
+		}
+
 		return response;
 	}
 
-	public async post<TDataStyle>(uri: string, data: string): Promise<IWebScraperResponse<TDataStyle>> {
-		const response: IWebScraperResponse<TDataStyle> = await this.request(({
+	public async get<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
+		const response: IWebScraperResponse<TData> = await this.request({
+			url: uri,
+			method: "GET",
+		});
+		return response;
+	}
+
+	public async post<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
+		const response: IWebScraperResponse<TData> = await this.request({
 			url: uri,
 			method: "POST",
 			data,
-		}));
+		});
 		return response;
 	}
 
-	public async put<TDataStyle>(uri: string, data: string): Promise<IWebScraperResponse<TDataStyle>> {
-		const response: IWebScraperResponse<TDataStyle> = await this.request(({
+	public async put<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
+		const response: IWebScraperResponse<TData> = await this.request({
 			url: uri,
 			method: "PUT",
 			data,
-		}));
+		});
 		return response;
 	}
 
-	public async delete<TDataStyle>(uri: string): Promise<IWebScraperResponse<TDataStyle>> {
-		const response: IWebScraperResponse<TDataStyle> = await this.request(({
+	public async delete<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
+		const response: IWebScraperResponse<TData> = await this.request({
 			url: uri,
 			method: "DELETE",
-		}));
+		});
 		return response;
 	}
 
-	public request<TDataStyle>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TDataStyle>> {
+	public requestRaw<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
-		const uri = requestOptions.url;
-		const usedMethod = requestOptions.method;
+		let headers: { [s: string]: string | number} = {
+			"Accept": "application/json, text/javascript, */*",
+			"User-Agent": "WebScraper.io PHP SDK v1.0",
+		};
 
-		let usedHeaders; // : { [s: string]: string}
-
-		if (requestOptions.data) {
-			usedHeaders = {
-				"Accept": "application/json, text/javascript, */*",
-				"User-Agent": "WebScraper.io PHP SDK v1.0",
+		if (options.data) {
+			headers = {
+				...headers,
 				"Content-Type": "application//json",
-				"Content-Length": Buffer.byteLength(requestOptions.data),
+				"Content-Length": Buffer.byteLength(options.data),
 			};
-		} else {
-			usedHeaders = {
-				"Accept": "application/json, text/javascript, */*",
-				"User-Agent": "WebScraper.io PHP SDK v1.0",
-			};
-			requestOptions.data = "";
 		}
 
-		let usedQuery;
+		let query = {
+			api_token: this.token,
+		};
 
-		if (requestOptions.query) {
-			usedQuery = {
-				api_token: this.token,
-				page: requestOptions.query.page,
-				sitemap_id: requestOptions.query.sitemap_id,
-			};
-		} else {
-			usedQuery = {
-				api_token: this.token,
+		if (options.query) {
+			query = {
+				...query,
+				...options.query,
 			};
 		}
 
 		const requestUrl = url.parse(url.format({
 			protocol: "https",
 			hostname: "api.webscraper.io",
-			pathname: `/api/v1/${uri}`,
-			query: usedQuery,
+			pathname: `/api/v1/${options.url}`,
+			query,
 		}));
 
-		const options = {
+		const requestOptions = {
 			hostname: requestUrl.hostname,
 			timeout: 600.0, // 5
 			path: requestUrl.path,
-			method: usedMethod,
-			headers: usedHeaders,
+			method: options.method,
+			headers,
 		};
-
+		const nsu = 1;
 		return new Promise( (resolve, reject )=> {
 
-			let file:  WriteStream;
-			if (requestOptions.saveTo) {
-				file = fs.createWriteStream(requestOptions.saveTo);
-			}
-			const request = http.request(options, (response) => {
+			const request = http.request(requestOptions, (response) => {
 
-				if (requestOptions.saveTo) {
+				if (options.saveTo) {
+					let file:  WriteStream;
+
+					file = fs.createWriteStream(options.saveTo);
 
 					response.pipe(file);
 
@@ -129,18 +135,21 @@ export class HttpClient {
 					});
 
 					response.on("end", () => {
-
-						const dataObj: IWebScraperResponse<TDataStyle> = JSON.parse(responseData);
+const nu = 1;
+						const dataObj: IWebScraperResponse<TData> = JSON.parse(responseData);
 						if (!dataObj.success) {
-							throw Error;
+							reject(responseData); // or reject(dataObj)
 						}
 						resolve(dataObj);
-
-						const a  = 1;
 					});
 				}
 			});
-			request.write(requestOptions.data);
+			if (options.data) {
+				request.write(options.data);
+			}
+			request.on("error", (e) => {
+				reject(e);
+			});
 			request.end();
 		});
 
