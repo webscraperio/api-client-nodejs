@@ -19,19 +19,16 @@ export class HttpClient {
 
 	private async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
-		let response: IWebScraperResponse<TData>;
-
 		try {
-			response = await this.requestRaw({
+			const response: IWebScraperResponse<TData> = await this.requestRaw({
 				method: requestOptions.method,
 				url: requestOptions.url,
 				data: requestOptions.data,
 			});
+			return response;
 		} catch (e) {
 			throw new Error(`Web Scraper API Exception: ${e}`);
 		}
-
-		return response;
 	}
 
 	public async get<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
@@ -108,7 +105,7 @@ export class HttpClient {
 			method: options.method,
 			headers,
 		};
-		const nsu = 1;
+
 		return new Promise( (resolve, reject )=> {
 
 			const request = http.request(requestOptions, (response) => {
@@ -135,7 +132,7 @@ export class HttpClient {
 					});
 
 					response.on("end", () => {
-const nu = 1;
+
 						const dataObj: IWebScraperResponse<TData> = JSON.parse(responseData);
 						if (!dataObj.success) {
 							reject(responseData); // or reject(dataObj)
