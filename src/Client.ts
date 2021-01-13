@@ -11,6 +11,7 @@ import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
 import {IRequestOptions} from "./interfaces/IRequestOptions";
 import {IGetScrapingJobsResponse} from "./interfaces/IGetScrapingJobsResponse";
 import {IGetProblematicUrlsResponse} from "./interfaces/IGetProblematicUrlsResponse";
+import {IScrapingJobConfig} from "./interfaces/IScrapingJobConfig";
 
 export class Client {
 	private token: string; // private?
@@ -33,9 +34,9 @@ export class Client {
 
 	public async getSitemaps(page: number = 1): Promise<IGetSitemapsResponse[]> {
 
-		const array: IGetSitemapsResponse[] = [];
+		const sitemaps: IGetSitemapsResponse[] = [];
 
-		const response: IWebScraperResponse<IGetSitemapsResponse[]> = await this.httpClient.request({
+		const response: IWebScraperResponse<IGetSitemapsResponse[]> = await this.httpClient.requestRaw({
 			url: "sitemaps",
 			method: "GET",
 			query: {
@@ -43,7 +44,7 @@ export class Client {
 			},
 		});
 
-		response.data.forEach(e => array.push(e));
+		response.data.forEach(e => sitemaps.push(e));
 		// if (page < response.last_page) {
 		// 	page++;
 		// 	while (page <= response.last_page) {
@@ -58,7 +59,7 @@ export class Client {
 		// 	}
 		// }
 
-		return array;
+		return sitemaps;
 	}
 
 	public async updateSitemap(sitemapId: number, sitemap: string): Promise<string> {
@@ -71,13 +72,8 @@ export class Client {
 		return response.data;
 	}
 
-	public async createScrapingJob(sitemapId: number): Promise<ICreateScrapingJobResponse> {
-		const response: IWebScraperResponse<ICreateScrapingJobResponse> = await this.httpClient.post("scraping-job", JSON.stringify({
-			"sitemap_id": sitemapId,
-			"driver": "fulljs",
-			"page_load_delay": 2000,
-			"request_interval": 2000,
-		}));
+	public async createScrapingJob(sitemapId: number, scrapingJobConfig: IScrapingJobConfig): Promise<ICreateScrapingJobResponse> {
+		const response: IWebScraperResponse<ICreateScrapingJobResponse> = await this.httpClient.post("scraping-job", JSON.stringify(scrapingJobConfig));
 		return response.data;
 	}
 
@@ -88,9 +84,9 @@ export class Client {
 
 	public async getScrapingJobs(sitemapId?: number, page: number = 1): Promise<IGetScrapingJobsResponse[]> {
 
-	const array: IGetScrapingJobsResponse[] = [];
+	const scrapingJobs: IGetScrapingJobsResponse[] = [];
 
-	const response: IWebScraperResponse<IGetScrapingJobsResponse[]> = await this.httpClient.request({
+	const response: IWebScraperResponse<IGetScrapingJobsResponse[]> = await this.httpClient.requestRaw({
 		url: "scraping-jobs",
 		method: "GET",
 		query:{
@@ -98,21 +94,21 @@ export class Client {
 			sitemap_id: sitemapId,
 		},
 	});
-		response.data.forEach(e => array.push(e));
+		response.data.forEach(e => scrapingJobs.push(e));
 
-		return array;
+		return scrapingJobs;
 	}
 
-	public async getJSON(scrapingJobId: number, fileName: string): Promise<void> {
-		await this.httpClient.request({
+	public async downloadScrapingJobJSON(scrapingJobId: number, fileName: string): Promise<void> {
+		await this.httpClient.requestRaw({
 			method: "GET",
 			url: `scraping-job/${scrapingJobId}/json`,
 			saveTo: fileName,
 		});
 	}
 
-	public async getCSV(scrapingJobId: number, fileName: string): Promise<void> {
-		await this.httpClient.request({
+	public async downloadScrapingJobCSV(scrapingJobId: number, fileName: string): Promise<void> {
+		await this.httpClient.requestRaw({
 			method: "GET",
 			url: `scraping-job/${scrapingJobId}/csv`,
 			saveTo: fileName,
@@ -121,9 +117,9 @@ export class Client {
 
 	public async getProblematicUrls(scrapingJobId: number, page: number = 1): Promise<IGetProblematicUrlsResponse[]> {
 
-		const array: IGetProblematicUrlsResponse[] = [];
+		const problematicUrls: IGetProblematicUrlsResponse[] = [];
 
-		const response: IWebScraperResponse<IGetProblematicUrlsResponse[]> = await this.httpClient.request({
+		const response: IWebScraperResponse<IGetProblematicUrlsResponse[]> = await this.httpClient.requestRaw({
 			url: `scraping-job/${scrapingJobId}/problematic-urls`,
 			method: "GET",
 			query: {
@@ -131,8 +127,8 @@ export class Client {
 			},
 		});
 
-		response.data.forEach(e => array.push(e));
-		return array;
+		response.data.forEach(e => problematicUrls.push(e));
+		return problematicUrls;
 	}
 
 	public async deleteScrapingJob(scrapingJobId: number): Promise<string> {
