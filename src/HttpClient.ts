@@ -2,9 +2,8 @@ import http = require("https");
 import url = require("url");
 import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
-import * as fs from "fs";
-import {WriteStream} from "fs";
 import {IRequestOptions} from "./interfaces/IRequestOptions";
+import * as fs from "fs";
 
 export class HttpClient {
 
@@ -17,13 +16,14 @@ export class HttpClient {
 		this.baseUri = options.baseUri;
 	}
 
-	private async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+	public async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
 		try {
 			const response: IWebScraperResponse<TData> = await this.requestRaw({
 				method: requestOptions.method,
 				url: requestOptions.url,
 				data: requestOptions.data,
+				query: requestOptions.query,
 			});
 			return response;
 		} catch (e) {
@@ -67,7 +67,7 @@ export class HttpClient {
 
 	public requestRaw<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
-		let headers: { [s: string]: string | number} = {
+		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
 			"User-Agent": "WebScraper.io PHP SDK v1.0",
 		};
@@ -100,55 +100,53 @@ export class HttpClient {
 
 		const requestOptions = {
 			hostname: requestUrl.hostname,
-			timeout: 600.0, // 5
+			timeout: 600.0,
 			path: requestUrl.path,
 			method: options.method,
 			headers,
 		};
 
-		return new Promise( (resolve, reject )=> {
+		return new Promise((resolve, reject) => {
 
-			const request = http.request(requestOptions, (response) => {
+				const request = http.request(requestOptions, (response) => {
+					if (options.saveTo) {
+						const file = fs.createWriteStream(options.saveTo);
 
-				if (options.saveTo) {
-					let file:  WriteStream;
+						response.pipe(file);
 
-					file = fs.createWriteStream(options.saveTo);
+						file.on("finish", () => {
+							file.close();
+						});
 
-					response.pipe(file);
-
-					file.on("finish", () => {
-						file.close();
-						resolve(undefined);
-					});
-
-				} else {
+					}
 
 					let responseData: string = "";
 
-					response.setEncoding("utf8");
 					response.on("data", (chunk) => {
 						responseData += chunk;
 					});
 
 					response.on("end", () => {
-
-						const dataObj: IWebScraperResponse<TData> = JSON.parse(responseData);
-						if (!dataObj.success) {
-							reject(responseData); // or reject(dataObj)
+						let dataObj: IWebScraperResponse<TData>;
+						try {
+							dataObj = JSON.parse(responseData);
+							if (!dataObj.success)
+								reject(responseData);
+						} catch {
+							resolve(undefined);
 						}
 						resolve(dataObj);
 					});
+				});
+				if (options.data) {
+					request.write(options.data);
 				}
-			});
-			if (options.data) {
-				request.write(options.data);
+				request.on("error", (e) => {
+					reject(e);
+				});
+				request.end();
 			}
-			request.on("error", (e) => {
-				reject(e);
-			});
-			request.end();
-		});
+		);
 
 	}
 }

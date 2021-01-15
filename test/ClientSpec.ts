@@ -5,12 +5,8 @@ import {IGetSitemapResponse} from "../src/interfaces/IGetSitemapResponse";
 import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobResponse";
 import {IGetScrapingJobResponse} from "../src/interfaces/IGetScrapingJobResponse";
 import {IGetAccountInfoResponse} from "../src/interfaces/IGetAccountInfoResponse";
-import fs = require("fs");
-import {sleep} from "./sleepFunction";
-import {IGetSitemapsResponse} from "../src/interfaces/IGetSitemapsResponse";
-import {IGetScrapingJobsResponse} from "../src/interfaces/IGetScrapingJobsResponse";
-import {IGetProblematicUrlsResponse} from "../src/interfaces/IGetProblematicUrlsResponse";
 import {IScrapingJobConfig} from "../src/interfaces/IScrapingJobConfig";
+import fs = require("fs");
 
 const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
 
@@ -52,12 +48,36 @@ describe("API Client", () => {
 		expect(getSitemapResponse.id).to.be.equal(createSitemapResonse.id);
 	});
 
-	it("should get sitemaps", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
-		const sitemaps:IGetSitemapsResponse[] = await client.getSitemaps(); // optional param. page(def -> 1)
-		expect(sitemaps.length).to.be.greaterThan(0);
-		expect(sitemaps.find(e => e.id === createSitemapResonse.id)).to.be.ok;
+	it("should get sitemaps with pagination", async () => {
+		const iterator: any = await client.getSitemaps();
+		const sitemaps: any[] = [];
+		for await(const record of iterator) {
+			sitemaps.push(record);
+		}
+
+		expect(sitemaps.length).to.be.greaterThan(100);
 	});
+
+	// it("should get sitemaps with Manual pagination", async () => {
+	// 	createSitemapResonse = await client.createSitemap(sitemap);
+	//
+	// 	let totalRecordsFound = 0;
+	// 	const iterator = await client.getSitemaps();
+	// 	let page = 1;
+	// 	do {
+	// 		const records = await iterator.getPageData(page);
+	// 		totalRecordsFound += records.length;
+	// 		page++;
+	// 	} while (page <= await iterator.getLastPage());
+	//
+	// 	// for await(const record of iterator.getPageData(page)) {
+	// 	// 	totalRecordsFound += record.length;
+	// 	// }
+	//
+	// 	const recordCountFromIterator = iterator.array.length;
+	//
+	// 	expect(recordCountFromIterator).to.be.equal(totalRecordsFound);
+	// });
 
 	it("should update the sitemap", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
@@ -74,6 +94,7 @@ describe("API Client", () => {
 
 	it("should create a scraping job", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
+
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: createSitemapResonse.id,
 			driver: "fulljs",
@@ -97,7 +118,7 @@ describe("API Client", () => {
 		expect(getScrapingJobResponse.id).to.equal(createScrapingJobResponse.id);
 	});
 
-	it("should get scraping jobs", async () => {
+	it("should get scraping jobs with pagination", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: createSitemapResonse.id,
@@ -105,32 +126,56 @@ describe("API Client", () => {
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
-		const scrapingJobs: IGetScrapingJobsResponse[] = await client.getScrapingJobs(); // optional param. sitemapId, page(default -> 1)
-		expect(scrapingJobs.length).to.be.greaterThan(0);
-		expect(scrapingJobs.find(e => e.id === createScrapingJobResponse.id)).to.be.ok;
+		await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		const iterator = await client.getScrapingJobs(); // sitemapId 415221 ---> one job with id - 3443576
+		const scrapingJobs: any[] = [];
+
+		for await(const record of iterator) {
+			scrapingJobs.push(record);
+		}
+
+		expect(scrapingJobs.length).to.be.greaterThan(100);
+	});
+
+	it("should get scraping jobs from specific sitemap", async () => {
+		createSitemapResonse = await client.createSitemap(sitemap);
+		const scrapingJobConfig: IScrapingJobConfig = {
+			sitemap_id: createSitemapResonse.id,
+			driver: "fulljs",
+			page_load_delay: 2000,
+			request_interval: 2000,
+		};
+		await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		const iterator = await client.getScrapingJobs(415221); // sitemapId 415221 ---> one job with id - 3443576
+		const scrapingJobs: any[] = [];
+
+		for await(const record of iterator) {
+			scrapingJobs.push(record);
+		}
+
+		expect(scrapingJobs.length).to.be.equal(1);
 	});
 
 	it("should download scraped data in json format", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
-		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResonse.id,
-			driver: "fulljs",
-			page_load_delay: 2000,
-			request_interval: 2000,
-		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
-		let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-
-		const startTime = Date.now();
-		while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
-			getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-			await sleep(5000);
-		}
+		// createSitemapResonse = await client.createSitemap(sitemap);
+		// const scrapingJobConfig: IScrapingJobConfig = {
+		// 	sitemap_id: createSitemapResonse.id,
+		// 	driver: "fulljs",
+		// 	page_load_delay: 2000,
+		// 	request_interval: 2000,
+		// };
+		// const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		// let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+		//
+		// const startTime = Date.now();
+		// while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
+		// 	getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+		// 	await sleep(5000);
+		// }
 
 		const outputfile: string = "./data/outputfile.json";
 
-		await client.downloadScrapingJobJSON(3402771, outputfile);
+		await client.downloadScrapingJobJSON(3446674, outputfile); // 3402771 throws error //3446674 legit
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
 		fs.unlinkSync(outputfile);
@@ -138,65 +183,41 @@ describe("API Client", () => {
 	});
 
 	it("should download scraped data in CSV format", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
-		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResonse.id,
-			driver: "fulljs",
-			page_load_delay: 2000,
-			request_interval: 2000,
-		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
-		let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-
-		const startTime = Date.now();
-		while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
-			getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-			await sleep(5000);
-		}
-
+		// 	createSitemapResonse = await client.createSitemap(sitemap);
+		// 	const scrapingJobConfig: IScrapingJobConfig = {
+		// 		sitemap_id: createSitemapResonse.id,
+		// 		driver: "fulljs",
+		// 		page_load_delay: 2000,
+		// 		request_interval: 2000,
+		// 	};
+		// 	const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		// 	let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+		//
+		// 	const startTime = Date.now();
+		// 	while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
+		// 		getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
+		// 		await sleep(5000);
+		// 	}
 		const outputfile: string = "./data/outputfile.csv";
 
-		await client.downloadScrapingJobCSV(getScrapingJobResponse.id, outputfile);
+		await client.downloadScrapingJobCSV(3446674, outputfile); // 3402771 throws error //3446674 legit
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
 		fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
-	// it("should get scraping job problematic Urls", async () => {
-	// 	// const time = Date.now();
-	// 	// const problematicSitemap: string = `{
-	// 	// 				"_id":"${time}",
-	// 	// 				"startUrl":[
-	// 	// 					"https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
-	// 	// 					"https://webscraper.io/test-sites/e-commerce/static/computers/tablets"
-	// 	// 				],
-	// 	// 				"selectors":[
-	// 	// 					{
-	// 	// 						"id":"selector-test",
-	// 	// 						"type":"SelectorText",
-	// 	// 						"parentSelectors":["_root"],
-	// 	// 						"selector":"body:contains(\\"Computers / Tablets\\") .page-header",
-	// 	// 						"multiple":true,
-	// 	// 						"regex":"",
-	// 	// 						"delay":0
-	// 	// 					}
-	// 	// 				]
-	// 	// 			}`;
-	// 	//
-	// 	// createSitemapResonse = await client.createSitemap(problematicSitemap);
-	// 	// const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id);
-	// 	// let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-	// 	//
-	// 	// const startTime = Date.now();
-	// 	// while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "shelved") {
-	// 	// 	getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-	// 	// 	await sleep(5000);
-	// 	// }
-	//
-	// 	const problematicUrls: IGetProblematicUrlsResponse[] = await client.getProblematicUrls(getScrapingJobResponse.id);
-	// 	expect(problematicUrls.length).to.be.greaterThan(0);
-	// });
+	it("should get scraping job problematic Urls", async () => {
+
+		const iterator = await client.getProblematicUrls(3446233);
+		const problematicUrls: any[] = [];
+
+		for await(const record of iterator) {
+			problematicUrls.push(record);
+		}
+
+		expect(problematicUrls.length).to.be.greaterThan(0);
+	});
 
 	it("should delete the scraping job", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
