@@ -6,15 +6,13 @@ import {IGetSitemapResponse} from "./interfaces/IGetSitemapResponse";
 import {HttpClient} from "./HttpClient";
 import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
-import {IPaginationResponse} from "./interfaces/IPaginationResponse";
-import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
-import {IRequestOptions} from "./interfaces/IRequestOptions";
-import {IGetScrapingJobsResponse} from "./interfaces/IGetScrapingJobsResponse";
-import {IGetProblematicUrlsResponse} from "./interfaces/IGetProblematicUrlsResponse";
 import {IScrapingJobConfig} from "./interfaces/IScrapingJobConfig";
+import {PaginationIterator} from "./PaginationIterator";
+import {IGetProblematicUrlsResponse} from "./interfaces/IGetProblematicUrlsResponse";
+import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
 
 export class Client {
-	private token: string; // private?
+	private token: string;
 	private httpClient: HttpClient;
 
 	constructor(options: IOptions) {
@@ -32,34 +30,9 @@ export class Client {
 		return response.data;
 	}
 
-	public async getSitemaps(page: number = 1): Promise<IGetSitemapsResponse[]> {
-
-		const sitemaps: IGetSitemapsResponse[] = [];
-
-		const response: IWebScraperResponse<IGetSitemapsResponse[]> = await this.httpClient.requestRaw({
-			url: "sitemaps",
-			method: "GET",
-			query: {
-				page,
-			},
-		});
-
-		response.data.forEach(e => sitemaps.push(e));
-		// if (page < response.last_page) {
-		// 	page++;
-		// 	while (page <= response.last_page) {
-		// 		 const responseAll_one: IWebScraperResponse<IPaginationResponse<IGetSitemapsResponse[]>> = await this.httpClient.request({
-		// 			url: "sitemaps",
-		// 			method: "GET",
-		// 			page,
-		// 		});
-		// 		response = responseAll_one.data;
-		// 		response.data.forEach(e => array.push(e));
-		// 		page++;
-		// 	}
-		// }
-
-		return sitemaps;
+	public async getSitemaps(): Promise<PaginationIterator<IGetSitemapsResponse>> {
+		const iterator = new PaginationIterator<IGetSitemapsResponse>(this.httpClient, "sitemaps");
+		return iterator;
 	}
 
 	public async updateSitemap(sitemapId: number, sitemap: string): Promise<string> {
@@ -82,21 +55,9 @@ export class Client {
 		return response.data;
 	}
 
-	public async getScrapingJobs(sitemapId?: number, page: number = 1): Promise<IGetScrapingJobsResponse[]> {
-
-	const scrapingJobs: IGetScrapingJobsResponse[] = [];
-
-	const response: IWebScraperResponse<IGetScrapingJobsResponse[]> = await this.httpClient.requestRaw({
-		url: "scraping-jobs",
-		method: "GET",
-		query:{
-			page,
-			sitemap_id: sitemapId,
-		},
-	});
-		response.data.forEach(e => scrapingJobs.push(e));
-
-		return scrapingJobs;
+	public async getScrapingJobs(sitemapId?: number): Promise<PaginationIterator<IGetScrapingJobResponse>> {
+		const iterator = new PaginationIterator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", {sitemap_id: sitemapId});
+		return iterator;
 	}
 
 	public async downloadScrapingJobJSON(scrapingJobId: number, fileName: string): Promise<void> {
@@ -115,20 +76,9 @@ export class Client {
 		});
 	}
 
-	public async getProblematicUrls(scrapingJobId: number, page: number = 1): Promise<IGetProblematicUrlsResponse[]> {
-
-		const problematicUrls: IGetProblematicUrlsResponse[] = [];
-
-		const response: IWebScraperResponse<IGetProblematicUrlsResponse[]> = await this.httpClient.requestRaw({
-			url: `scraping-job/${scrapingJobId}/problematic-urls`,
-			method: "GET",
-			query: {
-				page,
-			},
-		});
-
-		response.data.forEach(e => problematicUrls.push(e));
-		return problematicUrls;
+	public async getProblematicUrls(scrapingJobId: number): Promise<PaginationIterator<IGetProblematicUrlsResponse>> {
+		const iterator = new PaginationIterator<IGetProblematicUrlsResponse>(this.httpClient, `scraping-job/${scrapingJobId}/problematic-urls`);
+		return iterator;
 	}
 
 	public async deleteScrapingJob(scrapingJobId: number): Promise<string> {
