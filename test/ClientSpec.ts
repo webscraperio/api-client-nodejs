@@ -157,52 +157,25 @@ describe("API Client", () => {
 	});
 
 	it("should download scraped data in json format", async () => {
-		// createSitemapResonse = await client.createSitemap(sitemap);
-		// const scrapingJobConfig: IScrapingJobConfig = {
-		// 	sitemap_id: createSitemapResonse.id,
-		// 	driver: "fulljs",
-		// 	page_load_delay: 2000,
-		// 	request_interval: 2000,
-		// };
-		// const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
-		// let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-		//
-		// const startTime = Date.now();
-		// while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
-		// 	getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-		// 	await sleep(5000);
-		// }
-
 		const outputfile: string = "./data/outputfile.json";
 
-		await client.downloadScrapingJobJSON(3446674, outputfile); // 3402771 throws error //3446674 legit
+		const expectedOutputFie: string = '{"web-scraper-order":"1611315699-1","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"MSI GL62M 7REX2"}\n{"web-scraper-order":"1611315699-2","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"MSI GL62VR 7RFX"}\n{"web-scraper-order":"1611315699-3","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"Acer Aspire 3 A3..."}\n';
+
+		await client.downloadScrapingJobJSON(3472328, outputfile); // 3402771 throws error //3446674 legit //3472328 for tests
 		expect(fs.existsSync(outputfile)).to.be.ok;
-		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
+		expect(expectedOutputFie).to.be.eql((fs.readFileSync(outputfile, "utf8")));
 		fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
 	it("should download scraped data in CSV format", async () => {
-		// 	createSitemapResonse = await client.createSitemap(sitemap);
-		// 	const scrapingJobConfig: IScrapingJobConfig = {
-		// 		sitemap_id: createSitemapResonse.id,
-		// 		driver: "fulljs",
-		// 		page_load_delay: 2000,
-		// 		request_interval: 2000,
-		// 	};
-		// 	const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
-		// 	let getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-		//
-		// 	const startTime = Date.now();
-		// 	while (startTime + 60000 > Date.now() && getScrapingJobResponse.status !== "finished") {
-		// 		getScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
-		// 		await sleep(5000);
-		// 	}
 		const outputfile: string = "./data/outputfile.csv";
 
-		await client.downloadScrapingJobCSV(3446674, outputfile); // 3402771 throws error //3446674 legit
+		const expectedOutputFie: string = '﻿web-scraper-order,web-scraper-start-url,product\r\n"1611315699-1","https://webscraper.io/test-sites/e-commerce/allinone","MSI GL62M 7REX2"\r\n"1611315699-2","https://webscraper.io/test-sites/e-commerce/allinone","MSI GL62VR 7RFX"\r\n"1611315699-3","https://webscraper.io/test-sites/e-commerce/allinone","Acer Aspire 3 A3..."\r\n';
+
+		await client.downloadScrapingJobCSV(3472328, outputfile); // 3402771 throws error //3446674 legit //3472328 for tests
 		expect(fs.existsSync(outputfile)).to.be.ok;
-		expect(fs.readFileSync(outputfile)).to.not.be.undefined;
+		expect(expectedOutputFie).to.be.eql((fs.readFileSync(outputfile, "utf8")));
 		fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
