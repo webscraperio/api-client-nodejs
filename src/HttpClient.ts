@@ -106,19 +106,13 @@ export class HttpClient {
 			headers,
 		};
 
+		let file: fs.WriteStream;
+
 		return new Promise((resolve, reject) => {
-
+				if (options.saveTo) {
+					file = fs.createWriteStream(options.saveTo);
+				}
 				const request = http.request(requestOptions, (response) => {
-					if (options.saveTo) {
-						const file = fs.createWriteStream(options.saveTo);
-
-						response.pipe(file);
-
-						file.on("finish", () => {
-							file.close();
-						});
-
-					}
 
 					let responseData: string = "";
 
@@ -133,7 +127,10 @@ export class HttpClient {
 							if (!dataObj.success)
 								reject(responseData);
 						} catch {
-							resolve(undefined);
+							if (options.saveTo) {
+								file.write(responseData);
+								file.end();
+							}
 						}
 						resolve(dataObj);
 					});
@@ -141,7 +138,11 @@ export class HttpClient {
 				if (options.data) {
 					request.write(options.data);
 				}
+
 				request.on("error", (e) => {
+					if (options.saveTo) {
+						file.end();
+					}
 					reject(e);
 				});
 				request.end();
