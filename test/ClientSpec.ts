@@ -46,6 +46,7 @@ describe("API Client", () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
 		const getSitemapResponse: IGetSitemapResponse = await client.getSitemap(createSitemapResonse.id);
 		expect(getSitemapResponse.id).to.be.equal(createSitemapResonse.id);
+		expect(getSitemapResponse.sitemap).to.be.eql(sitemap);
 	});
 
 	it("should get sitemaps with pagination", async () => {
@@ -54,41 +55,37 @@ describe("API Client", () => {
 		for await(const record of iterator) {
 			sitemaps.push(record);
 		}
-
 		expect(sitemaps.length).to.be.greaterThan(100);
 	});
 
-	// it("should get sitemaps with Manual pagination", async () => {
-	// 	createSitemapResonse = await client.createSitemap(sitemap);
-	//
-	// 	let totalRecordsFound = 0;
-	// 	const iterator = await client.getSitemaps();
-	// 	let page = 1;
-	// 	do {
-	// 		const records = await iterator.getPageData(page);
-	// 		totalRecordsFound += records.length;
-	// 		page++;
-	// 	} while (page <= await iterator.getLastPage());
-	//
-	// 	// for await(const record of iterator.getPageData(page)) {
-	// 	// 	totalRecordsFound += record.length;
-	// 	// }
-	//
-	// 	const recordCountFromIterator = iterator.array.length;
-	//
-	// 	expect(recordCountFromIterator).to.be.equal(totalRecordsFound);
-	// });
-
 	it("should update the sitemap", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
-		const updateSitemapResponse: string = await client.updateSitemap(createSitemapResonse.id, sitemap);
+
+		const jsonSitemap = JSON.parse(sitemap);
+		jsonSitemap.startUrl = ["https://changed-id-for-update.com"];
+		const updatedSitemap = JSON.stringify(jsonSitemap);
+		const updateSitemapResponse: string = await client.updateSitemap(createSitemapResonse.id, updatedSitemap);
 		expect(updateSitemapResponse).to.be.equal("ok");
+
+		const getNewSitemapResponse: IGetSitemapResponse = await client.getSitemap(createSitemapResonse.id);
+		expect(getNewSitemapResponse.id).to.be.equal(createSitemapResonse.id);
+		expect(getNewSitemapResponse.sitemap).to.be.eql(updatedSitemap);
 	});
 
 	it("should delete the sitemap", async () => {
 		createSitemapResonse = await client.createSitemap(sitemap);
 		const deleteSitemapResponse: string = await client.deleteSitemap(createSitemapResonse.id);
 		expect(deleteSitemapResponse).to.be.equal("ok");
+		const expectedError: string = "{\"success\":false,\"error\":\"An error occured\"}";
+		const fullExpectedError: string = `Error: Web Scraper API Exception: ${expectedError}`;
+		let errorThrown: boolean = false;
+		try {
+			await client.getSitemap(createSitemapResonse.id);
+		} catch (e) {
+			expect(fullExpectedError).to.be.equal(e.toString());
+			errorThrown = true;
+		}
+		expect(errorThrown).to.be.true;
 		createSitemapResonse = undefined;
 	});
 
@@ -116,6 +113,14 @@ describe("API Client", () => {
 		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
 		const getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
 		expect(getScrapingJobResponse.id).to.equal(createScrapingJobResponse.id);
+		expect(getScrapingJobResponse.sitemap_id).to.equal(createSitemapResonse.id);
+		// expect(getScrapingJobResponse.status).to.equal("scheduling"); //sometimes shows as finished
+		expect(getScrapingJobResponse.test_run).to.equal(0);
+		expect(getScrapingJobResponse.sitemap_name).to.equal(JSON.parse(sitemap)._id);
+		expect(getScrapingJobResponse.request_interval).to.equal(2000);
+		expect(getScrapingJobResponse.page_load_delay).to.equal(2000);
+		expect(getScrapingJobResponse.driver).to.equal("fulljs");
+		expect(getScrapingJobResponse.scheduled).to.equal(0);
 	});
 
 	it("should get scraping jobs with pagination", async () => {
@@ -152,7 +157,7 @@ describe("API Client", () => {
 		for await(const record of iterator) {
 			scrapingJobs.push(record);
 		}
-
+		expect(scrapingJobs[0].id).to.be.equal(3443576);
 		expect(scrapingJobs.length).to.be.equal(1);
 	});
 
@@ -189,7 +194,12 @@ describe("API Client", () => {
 			problematicUrls.push(record);
 		}
 
-		expect(problematicUrls.length).to.be.greaterThan(0);
+		const expectedData = {
+			url: "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
+			type: "empty",
+		};
+
+		expect(problematicUrls[0]).to.be.eql(expectedData);
 	});
 
 	it("should delete the scraping job", async () => {
@@ -203,10 +213,20 @@ describe("API Client", () => {
 		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
 		const deleteScrapingJobResponse: string = await client.deleteScrapingJob(createScrapingJobResponse.id);
 		expect(deleteScrapingJobResponse).to.equal("ok");
+		const expectedError: string = "{\"success\":false,\"error\":\"An error occured\"}";
+		const fullExpectedError: string = `Error: Web Scraper API Exception: ${expectedError}`;
+		let errorThrown: boolean = false;
+		try {
+			await client.getScrapingJob(createScrapingJobResponse.id);
+		} catch (e) {
+			expect(fullExpectedError).to.be.equal(e.toString());
+			errorThrown = true;
+		}
+		expect(errorThrown).to.be.true;
 	});
 
 	it("should return account info", async () => {
 		const accountInfoResponse: IGetAccountInfoResponse = await client.getAccountInfo();
-		expect(accountInfoResponse.email).to.not.be.undefined;
+		expect(accountInfoResponse.page_credits).to.be.greaterThan(0);
 	});
 });
