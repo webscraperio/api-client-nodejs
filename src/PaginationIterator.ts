@@ -14,7 +14,7 @@ export class PaginationIterator<TData> {
 
 	private lastPage: number = 1;
 
-	private total: number;
+	public total: number;
 
 	private perPage: number;
 

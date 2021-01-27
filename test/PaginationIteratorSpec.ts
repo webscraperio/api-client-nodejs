@@ -59,7 +59,7 @@ describe("Pagination iterator", () => {
 
 	it("should return current position as 0 because of rewind ", async () => {
 		for await (const record of iterator) { const a = 1;}
-		expect(iterator.position).to.be.equal(27);
+		expect(iterator.position).to.be.equal(iterator.total - 100);
 		await iterator.rewind();
 		expect(iterator.position).to.be.equal(0);
 		const currentRecord = await iterator.current();

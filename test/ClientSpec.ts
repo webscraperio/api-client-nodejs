@@ -13,10 +13,11 @@ const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5
 const client = new Client({
 	token: apiToken,
 	baseUri: "https://api.webscraper.io/api/v1/",
+	useBackoffSleep: true,
 });
 
 let sitemap: string;
-let createSitemapResonse: ICreateSitemapResponse;
+let createSitemapResponse: ICreateSitemapResponse;
 // check if path exists
 if (!fs.existsSync("./data")) {
 	fs.mkdirSync("./data");
@@ -30,22 +31,22 @@ describe("API Client", () => {
 	});
 
 	afterEach(async () => {
-		if (createSitemapResonse) {
-			const deleteAfterEachSitemapResponse: string = await client.deleteSitemap(createSitemapResonse.id);
+		if (createSitemapResponse) {
+			const deleteAfterEachSitemapResponse: string = await client.deleteSitemap(createSitemapResponse.id);
 			expect(deleteAfterEachSitemapResponse).to.be.equal("ok");
 		}
-		createSitemapResonse = undefined;
+		createSitemapResponse = undefined;
 	});
 
 	it("should create a sitemap", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
-		expect(createSitemapResonse.id).to.not.be.undefined;
+		createSitemapResponse = await client.createSitemap(sitemap);
+		expect(createSitemapResponse.id).to.not.be.undefined;
 	});
 
 	it("should get a sitemap", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
-		const getSitemapResponse: IGetSitemapResponse = await client.getSitemap(createSitemapResonse.id);
-		expect(getSitemapResponse.id).to.be.equal(createSitemapResonse.id);
+		createSitemapResponse = await client.createSitemap(sitemap);
+		const getSitemapResponse: IGetSitemapResponse = await client.getSitemap(createSitemapResponse.id);
+		expect(getSitemapResponse.id).to.be.equal(createSitemapResponse.id);
 		expect(getSitemapResponse.sitemap).to.be.eql(sitemap);
 	});
 
@@ -59,62 +60,61 @@ describe("API Client", () => {
 	});
 
 	it("should update the sitemap", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
+		createSitemapResponse = await client.createSitemap(sitemap);
 
 		const jsonSitemap = JSON.parse(sitemap);
 		jsonSitemap.startUrl = ["https://changed-id-for-update.com"];
 		const updatedSitemap = JSON.stringify(jsonSitemap);
-		const updateSitemapResponse: string = await client.updateSitemap(createSitemapResonse.id, updatedSitemap);
+		const updateSitemapResponse: string = await client.updateSitemap(createSitemapResponse.id, updatedSitemap);
 		expect(updateSitemapResponse).to.be.equal("ok");
 
-		const getNewSitemapResponse: IGetSitemapResponse = await client.getSitemap(createSitemapResonse.id);
-		expect(getNewSitemapResponse.id).to.be.equal(createSitemapResonse.id);
+		const getNewSitemapResponse: IGetSitemapResponse = await client.getSitemap(createSitemapResponse.id);
+		expect(getNewSitemapResponse.id).to.be.equal(createSitemapResponse.id);
 		expect(getNewSitemapResponse.sitemap).to.be.eql(updatedSitemap);
 	});
 
 	it("should delete the sitemap", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
-		const deleteSitemapResponse: string = await client.deleteSitemap(createSitemapResonse.id);
+		createSitemapResponse = await client.createSitemap(sitemap);
+		const deleteSitemapResponse: string = await client.deleteSitemap(createSitemapResponse.id);
 		expect(deleteSitemapResponse).to.be.equal("ok");
 		const expectedError: string = "{\"success\":false,\"error\":\"An error occured\"}";
 		const fullExpectedError: string = `Error: Web Scraper API Exception: ${expectedError}`;
 		let errorThrown: boolean = false;
 		try {
-			await client.getSitemap(createSitemapResonse.id);
+			await client.getSitemap(createSitemapResponse.id);
 		} catch (e) {
-			expect(fullExpectedError).to.be.equal(e.toString());
+			expect(fullExpectedError).to.equal(e.toString());
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
-		createSitemapResonse = undefined;
+		createSitemapResponse = undefined;
 	});
 
 	it("should create a scraping job", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
+		createSitemapResponse = await client.createSitemap(sitemap);
 
 		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResonse.id,
+			sitemap_id: createSitemapResponse.id,
 			driver: "fulljs",
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
 		expect(createScrapingJobResponse.id).to.not.be.undefined;
 	});
 
 	it("should get a scraping job", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
+		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResonse.id,
+			sitemap_id: createSitemapResponse.id,
 			driver: "fulljs",
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
 		const getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
 		expect(getScrapingJobResponse.id).to.equal(createScrapingJobResponse.id);
-		expect(getScrapingJobResponse.sitemap_id).to.equal(createSitemapResonse.id);
-		// expect(getScrapingJobResponse.status).to.equal("scheduling"); //sometimes shows as finished
+		expect(getScrapingJobResponse.sitemap_id).to.equal(createSitemapResponse.id);
 		expect(getScrapingJobResponse.test_run).to.equal(0);
 		expect(getScrapingJobResponse.sitemap_name).to.equal(JSON.parse(sitemap)._id);
 		expect(getScrapingJobResponse.request_interval).to.equal(2000);
@@ -124,14 +124,14 @@ describe("API Client", () => {
 	});
 
 	it("should get scraping jobs with pagination", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
+		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResonse.id,
+			sitemap_id: createSitemapResponse.id,
 			driver: "fulljs",
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
 		const iterator = await client.getScrapingJobs(); // sitemapId 415221 ---> one job with id - 3443576
 		const scrapingJobs: any[] = [];
 
@@ -143,14 +143,14 @@ describe("API Client", () => {
 	});
 
 	it("should get scraping jobs from specific sitemap", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
+		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResonse.id,
+			sitemap_id: createSitemapResponse.id,
 			driver: "fulljs",
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
 		const iterator = await client.getScrapingJobs(415221); // sitemapId 415221 ---> one job with id - 3443576
 		const scrapingJobs: any[] = [];
 
@@ -166,7 +166,7 @@ describe("API Client", () => {
 
 		const expectedOutputFie: string = '{"web-scraper-order":"1611315699-1","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"MSI GL62M 7REX2"}\n{"web-scraper-order":"1611315699-2","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"MSI GL62VR 7RFX"}\n{"web-scraper-order":"1611315699-3","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"Acer Aspire 3 A3..."}\n';
 
-		await client.downloadScrapingJobJSON(3472328, outputfile); // 3402771 throws error //3446674 legit //3472328 for tests
+		await client.downloadScrapingJobJSON(3472328, outputfile); // 3402771 throws error //3472328 for test
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(expectedOutputFie).to.be.eql((fs.readFileSync(outputfile, "utf8")));
 		fs.unlinkSync(outputfile);
@@ -178,7 +178,7 @@ describe("API Client", () => {
 
 		const expectedOutputFie: string = '﻿web-scraper-order,web-scraper-start-url,product\r\n"1611315699-1","https://webscraper.io/test-sites/e-commerce/allinone","MSI GL62M 7REX2"\r\n"1611315699-2","https://webscraper.io/test-sites/e-commerce/allinone","MSI GL62VR 7RFX"\r\n"1611315699-3","https://webscraper.io/test-sites/e-commerce/allinone","Acer Aspire 3 A3..."\r\n';
 
-		await client.downloadScrapingJobCSV(3472328, outputfile); // 3402771 throws error //3446674 legit //3472328 for tests
+		await client.downloadScrapingJobCSV(3472328, outputfile); // 3402771 throws error //3472328 for test
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(expectedOutputFie).to.be.eql((fs.readFileSync(outputfile, "utf8")));
 		fs.unlinkSync(outputfile);
@@ -203,14 +203,14 @@ describe("API Client", () => {
 	});
 
 	it("should delete the scraping job", async () => {
-		createSitemapResonse = await client.createSitemap(sitemap);
+		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResonse.id,
+			sitemap_id: createSitemapResponse.id,
 			driver: "fulljs",
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResonse.id, scrapingJobConfig);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
 		const deleteScrapingJobResponse: string = await client.deleteScrapingJob(createScrapingJobResponse.id);
 		expect(deleteScrapingJobResponse).to.equal("ok");
 		const expectedError: string = "{\"success\":false,\"error\":\"An error occured\"}";
