@@ -8,19 +8,20 @@ const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5
 const client = new Client({
 	token: apiToken,
 	baseUri: "https://api.webscraper.io/api/v1/",
+	useBackoffSleep: true,
 });
 
 let sitemap: string;
-let createSitemapResonse: ICreateSitemapResponse;
+let createSitemapResponse: ICreateSitemapResponse;
 
 describe("API Client", () => {
 
 	afterEach(async () => {
-		if (createSitemapResonse) {
-			const deleteAfterEachSitemapResponse: string = await client.deleteSitemap(createSitemapResonse.id);
+		if (createSitemapResponse) {
+			const deleteAfterEachSitemapResponse: string = await client.deleteSitemap(createSitemapResponse.id);
 			expect(deleteAfterEachSitemapResponse).to.be.equal("ok");
 		}
-		createSitemapResonse = undefined;
+		createSitemapResponse = undefined;
 	});
 
 	it("should throw an error when creating a sitemap", async () => {
@@ -72,4 +73,19 @@ describe("API Client", () => {
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
+	// it("should not throw an error, use backoffSleep system to finish all requests", async () => {
+	// 	createSitemapResponse = await client.createSitemap(sitemap);
+	// 	let getSitemapResponse: IGetSitemapResponse;
+	// 	let errorThrown: boolean = false;
+	// 	try {
+	// 		for (let i = 0; i < 205; i++) {
+	// 			getSitemapResponse = await client.getSitemap(createSitemapResponse.id);
+	// 		}
+	// 	} catch (e) {
+	// 		errorThrown = true;
+	// 	}
+	// 	expect(errorThrown).to.be.false;
+	// 	expect(getSitemapResponse.id).to.be.equal(createSitemapResponse.id);
+	// 	expect(getSitemapResponse.sitemap).to.be.eql(sitemap);
+	// });
 });

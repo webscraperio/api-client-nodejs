@@ -4,6 +4,15 @@ import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 import {IRequestOptions} from "./interfaces/IRequestOptions";
 import * as fs from "fs";
+import {sleep} from "./Sleep";
+
+interface IHttpRequestOptions {
+	hostname: string;
+	timeout: number;
+	path: string;
+	method: string;
+	headers: { [s: string]: string | number };
+}
 
 export class HttpClient {
 
@@ -11,9 +20,12 @@ export class HttpClient {
 
 	private baseUri: string;
 
+	private useBackoffSleep: boolean;
+
 	constructor(options: IOptions) {
 		this.token = options.token;
 		this.baseUri = options.baseUri;
+		this.useBackoffSleep = !!options.useBackoffSleep;
 	}
 
 	public async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
@@ -65,7 +77,7 @@ export class HttpClient {
 		return response;
 	}
 
-	public requestRaw<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+	public async requestRaw<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
 		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
@@ -106,48 +118,72 @@ export class HttpClient {
 			headers,
 		};
 
+		const response = await this.backOffRequest(requestOptions, options);
+
+		if (response && response.success !== true) {
+			throw (response);
+		}
+
+		return response;
+	}
+
+	public async backOffRequest<TData>(requestOptions: IHttpRequestOptions, options: IRequestOptions): Promise<any> {
+		const allowedAttempts = this.useBackoffSleep ? 3 : 1;
+		let attempt = 1;
 		let file: fs.WriteStream;
 
-		return new Promise((resolve, reject) => {
-				if (options.saveTo) {
-					file = fs.createWriteStream(options.saveTo);
-				}
-				const request = http.request(requestOptions, (response) => {
+		do {
+			try {
+				return await new Promise((resolve, reject) => {
+						if (options.saveTo) {
+							file = fs.createWriteStream(options.saveTo);
+						}
+						const request = http.request(requestOptions, (response) => {
 
-					let responseData: string = "";
+							let responseData: string = "";
+							response.on("data", (chunk) => {
+								responseData += chunk;
+							});
 
-					response.on("data", (chunk) => {
-						responseData += chunk;
-					});
-
-					response.on("end", () => {
-						let dataObj: IWebScraperResponse<TData>;
-						try {
-							dataObj = JSON.parse(responseData);
-							if (!dataObj.success)
-								reject(responseData);
-						} catch {
+							response.on("end", () => {
+								let dataObj: IWebScraperResponse<TData>;
+								try {
+									dataObj = JSON.parse(responseData);
+									if (!dataObj.success) {
+										reject({response, responseData});
+									}
+								} catch {
+									if (options.saveTo) {
+										file.write(responseData);
+										file.end();
+									}
+								}
+								resolve(dataObj);
+							});
+						});
+						if (options.data) {
+							request.write(options.data);
+						}
+						request.on("error", (e) => {
 							if (options.saveTo) {
-								file.write(responseData);
 								file.end();
 							}
-						}
-						resolve(dataObj);
-					});
-				});
-				if (options.data) {
-					request.write(options.data);
-				}
-
-				request.on("error", (e) => {
-					if (options.saveTo) {
-						file.end();
+							reject(e);
+						});
+						request.end();
 					}
-					reject(e);
-				});
-				request.end();
+				);
+			} catch (e) {
+				const statusCode = e.response.statusCode;
+				if (attempt === allowedAttempts || statusCode !== 429) {
+					throw (e.responseData);
+				}
+				const retry = e.response.headers["retry-after"];
+				if (retry) {
+					await sleep((retry * 1000) + 1000);
+				}
 			}
-		);
-
+			attempt++;
+		} while (attempt <= allowedAttempts);
 	}
 }
