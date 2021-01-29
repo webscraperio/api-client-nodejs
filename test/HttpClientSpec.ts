@@ -50,9 +50,9 @@ describe("API Client", () => {
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
-		expect(fs.existsSync(outputfile)).to.be.ok;
-		expect(fs.readFileSync(outputfile, "utf8")).to.be.eql("");
-		fs.unlinkSync(outputfile);
+		// expect(fs.existsSync(outputfile)).to.be.ok;
+		// expect(fs.readFileSync(outputfile, "utf8")).to.be.eql("");
+		// fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
@@ -67,9 +67,9 @@ describe("API Client", () => {
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
-		expect(fs.existsSync(outputfile)).to.be.ok;
-		expect(fs.readFileSync(outputfile, "utf8")).to.be.eql("");
-		fs.unlinkSync(outputfile);
+		// expect(fs.existsSync(outputfile)).to.be.ok;
+		// expect(fs.readFileSync(outputfile, "utf8")).to.be.eql("");
+		// fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
