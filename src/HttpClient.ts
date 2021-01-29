@@ -144,9 +144,14 @@ export class HttpClient {
 							response.on("data", (chunk) => {
 								responseData += chunk;
 							});
-
+							if (options.saveTo) {
+								response.pipe(file);
+							}
 							response.on("end", () => {
 								let dataObj: IWebScraperResponse<TData>;
+								if (response.statusCode !== 200 && options.saveTo) {
+									fs.unlinkSync(options.saveTo);
+								}
 								try {
 									dataObj = JSON.parse(responseData);
 									if (!dataObj.success) {
@@ -154,8 +159,7 @@ export class HttpClient {
 									}
 								} catch {
 									if (options.saveTo) {
-										file.write(responseData);
-										file.end();
+										file.close();
 									}
 								}
 								resolve(dataObj);
@@ -166,7 +170,7 @@ export class HttpClient {
 						}
 						request.on("error", (e) => {
 							if (options.saveTo) {
-								file.end();
+								file.close();
 							}
 							reject(e);
 						});
