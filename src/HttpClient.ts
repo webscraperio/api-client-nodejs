@@ -31,12 +31,7 @@ export class HttpClient {
 	public async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
 		try {
-			const response: IWebScraperResponse<TData> = await this.requestRaw({
-				method: requestOptions.method,
-				url: requestOptions.url,
-				data: requestOptions.data,
-				query: requestOptions.query,
-			});
+			const response: IWebScraperResponse<TData> = await this.requestRaw(requestOptions);
 			return response;
 		} catch (e) {
 			throw new Error(`Web Scraper API Exception: ${e}`);
@@ -79,46 +74,8 @@ export class HttpClient {
 
 	public async requestRaw<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
-		let headers: { [s: string]: string | number } = {
-			"Accept": "application/json, text/javascript, */*",
-			"User-Agent": "WebScraper.io PHP SDK v1.0",
-		};
-
-		if (options.data) {
-			headers = {
-				...headers,
-				"Content-Type": "application//json",
-				"Content-Length": Buffer.byteLength(options.data),
-			};
-		}
-
-		let query = {
-			api_token: this.token,
-		};
-
-		if (options.query) {
-			query = {
-				...query,
-				...options.query,
-			};
-		}
-
-		const requestUrl = url.parse(url.format({
-			protocol: "https",
-			hostname: "api.webscraper.io",
-			pathname: `/api/v1/${options.url}`,
-			query,
-		}));
-
-		const requestOptions = {
-			hostname: requestUrl.hostname,
-			timeout: 600.0,
-			path: requestUrl.path,
-			method: options.method,
-			headers,
-		};
-
-		const response = await this.backOffRequest(requestOptions, options);
+		const callback = options.saveTo ? this.dataDownloadRequest.bind(this) : this.regularRequest.bind(this);
+		const response: IWebScraperResponse<TData> = await this.backOffRequest(callback, options);
 
 		if (response && response.success !== true) {
 			throw (response);
@@ -127,56 +84,13 @@ export class HttpClient {
 		return response;
 	}
 
-	public async backOffRequest<TData>(requestOptions: IHttpRequestOptions, options: IRequestOptions): Promise<any> {
+	public async backOffRequest<TData>(request: (options: IRequestOptions) => Promise<IWebScraperResponse<TData>>, options: IRequestOptions): Promise<any> {
 		const allowedAttempts = this.useBackoffSleep ? 3 : 1;
 		let attempt = 1;
-		let file: fs.WriteStream;
 
 		do {
 			try {
-				return await new Promise((resolve, reject) => {
-						if (options.saveTo) {
-							file = fs.createWriteStream(options.saveTo);
-						}
-						const request = http.request(requestOptions, (response) => {
-
-							let responseData: string = "";
-							response.on("data", (chunk) => {
-								responseData += chunk;
-							});
-							if (options.saveTo) {
-								response.pipe(file);
-							}
-							response.on("end", () => {
-								let dataObj: IWebScraperResponse<TData>;
-								if (response.statusCode !== 200 && options.saveTo) {
-									fs.unlinkSync(options.saveTo);
-								}
-								try {
-									dataObj = JSON.parse(responseData);
-									if (!dataObj.success) {
-										reject({response, responseData});
-									}
-								} catch {
-									if (options.saveTo) {
-										file.close();
-									}
-								}
-								resolve(dataObj);
-							});
-						});
-						if (options.data) {
-							request.write(options.data);
-						}
-						request.on("error", (e) => {
-							if (options.saveTo) {
-								file.close();
-							}
-							reject(e);
-						});
-						request.end();
-					}
-				);
+				return await request(options);
 			} catch (e) {
 				const statusCode = e.response.statusCode;
 				if (attempt === allowedAttempts || statusCode !== 429) {
@@ -189,5 +103,88 @@ export class HttpClient {
 			}
 			attempt++;
 		} while (attempt <= allowedAttempts);
+	}
+
+	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+		return new Promise((resolve, reject) => {
+			const request = http.request(this.getRequestOptions(options), (response) => {
+				let responseData: string = "";
+				response.on("data", (chunk) => {
+					responseData += chunk;
+				});
+
+				response.on("end", () => {
+					const dataObj: IWebScraperResponse<TData> = JSON.parse(responseData);
+					if (!dataObj.success) {
+						reject({response, responseData});
+					}
+					resolve(dataObj);
+				});
+			});
+			if (options.data) {
+				request.write(options.data);
+			}
+			request.on("error", (e) => {
+				reject(e);
+			});
+			request.end();
+		});
+	}
+
+	private async dataDownloadRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+		return new Promise((resolve, reject) => {
+			let file: fs.WriteStream;
+			file = fs.createWriteStream(options.saveTo);
+			const request = http.request(this.getRequestOptions(options), (response) => {
+
+				response.pipe(file);
+
+				response.on("end", () => {
+					if (response.statusCode !== 200 && options.saveTo) {
+						const responseData = (fs.readFileSync(options.saveTo, "utf8"));
+						fs.unlinkSync(options.saveTo);
+						reject({response, responseData});
+					}
+					file.close();
+					resolve(undefined);
+				});
+			});
+			request.on("error", (e) => {
+				file.close();
+				reject(e);
+			});
+			request.end();
+		});
+	}
+
+	private getRequestOptions(options: IRequestOptions): IHttpRequestOptions {
+		let headers: { [s: string]: string | number } = {
+			"Accept": "application/json, text/javascript, */*",
+			"User-Agent": "WebScraper.io PHP SDK v1.0",
+		};
+
+		if (options.data) {
+			headers = {
+				...headers,
+				"Content-Type": "application//json",
+				"Content-Length": Buffer.byteLength(options.data),
+			};
+		}
+		const requestUrl = url.parse(url.format({
+			protocol: "https",
+			hostname: "api.webscraper.io",
+			pathname: `/api/v1/${options.url}`,
+			query: {
+				api_token: this.token,
+				...options.query,
+			},
+		}));
+		return {
+			hostname: requestUrl.hostname,
+			timeout: 600.0,
+			path: requestUrl.path,
+			method: options.method,
+			headers,
+		};
 	}
 }
