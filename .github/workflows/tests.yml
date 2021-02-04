@@ -1,45 +1,26 @@
 name: tests
 
-
-
-on: [push]
-
-
+on: [ push ]
 
 jobs:
-
   tests:
-
     runs-on: ubuntu-latest
-
     timeout-minutes: 5
-
+    strategy:
+      matrix:
+        node: [ '10', '12', '14', '15' ]
     steps:
-
       - uses: actions/checkout@v1
-
       - uses: actions/setup-node@v1
-
         with:
-
-          node-version: 10.x
-
+          node-version: ${{ matrix.node }}
       - name: Cache node_modules
-
         id: node_modules
-
         uses: actions/cache@v1
-
         with:
-
           path: node_modules
-
           key: node_modules
-
       - name: Install NPM Dependencies
-
         run: npm install --silent | cat
-
       - name: run tests
-
         run: npm test
