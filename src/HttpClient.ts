@@ -1,18 +1,11 @@
 import http = require("https");
 import url = require("url");
-import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 import {IRequestOptions} from "./interfaces/IRequestOptions";
 import * as fs from "fs";
 import {sleep} from "./Sleep";
-
-interface IHttpRequestOptions {
-	hostname: string;
-	timeout: number;
-	path: string;
-	method: string;
-	headers: { [s: string]: string | number };
-}
+import {IHttpRequestOptions} from "./interfaces/IHttpRequestOptions";
+import {IClientOptions} from "./interfaces/IClientOptions";
 
 export class HttpClient {
 
@@ -22,10 +15,10 @@ export class HttpClient {
 
 	private useBackoffSleep: boolean;
 
-	constructor(options: IOptions) {
+	constructor(options: IClientOptions) {
 		this.token = options.token;
-		this.baseUri = options.baseUri;
-		this.useBackoffSleep = !!options.useBackoffSleep;
+		this.baseUri = "https://api.webscraper.io/api/v1/";
+		this.useBackoffSleep = options.useBackoffSleep === false ? false : true; // options.useBackoffSleep!==false
 	}
 
 	public async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
@@ -84,7 +77,7 @@ export class HttpClient {
 		return response;
 	}
 
-	public async backOffRequest<TData>(request: (options: IRequestOptions) => Promise<IWebScraperResponse<TData>>, options: IRequestOptions): Promise<any> {
+	private async backOffRequest<TData>(request: (options: IRequestOptions) => Promise<IWebScraperResponse<TData>>, options: IRequestOptions): Promise<any> {
 		const allowedAttempts = this.useBackoffSleep ? 3 : 1;
 		let attempt = 1;
 
@@ -160,13 +153,13 @@ export class HttpClient {
 	private getRequestOptions(options: IRequestOptions): IHttpRequestOptions {
 		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
-			"User-Agent": "WebScraper.io PHP SDK v1.0",
+			"User-Agent": "WebScraper.io NodeJS SDK v1.0", // "WebScraper.io PHP SDK v1.0
 		};
 
 		if (options.data) {
 			headers = {
 				...headers,
-				"Content-Type": "application//json",
+				"Content-Type": "application/json",
 				"Content-Length": Buffer.byteLength(options.data),
 			};
 		}

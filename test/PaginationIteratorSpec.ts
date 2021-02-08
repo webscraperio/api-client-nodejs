@@ -8,7 +8,6 @@ const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5
 let iterator: PaginationIterator<IGetSitemapsResponse>;
 const client = new Client({
 	token: apiToken,
-	baseUri: "https://api.webscraper.io/api/v1/",
 });
 
 const expectedFirstRecord = {
@@ -20,7 +19,6 @@ const expectedFirstRecord = {
 };
 
 describe("Pagination iterator", () => {
-
 	beforeEach(async () => {
 		iterator = await client.getSitemaps();
 	});
@@ -42,9 +40,9 @@ describe("Pagination iterator", () => {
 	});
 
 	it("should return key", async () => {
-		let i = 0;
+		let k = 0;
 		for await (const records of iterator) {
-			if (i++ === 110)
+			if (k++ === 110)
 				break;
 
 		}

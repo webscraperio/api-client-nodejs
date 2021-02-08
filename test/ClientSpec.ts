@@ -6,13 +6,13 @@ import {ICreateScrapingJobResponse} from "../src/interfaces/ICreateScrapingJobRe
 import {IGetScrapingJobResponse} from "../src/interfaces/IGetScrapingJobResponse";
 import {IGetAccountInfoResponse} from "../src/interfaces/IGetAccountInfoResponse";
 import {IScrapingJobConfig} from "../src/interfaces/IScrapingJobConfig";
+import {driver} from "../src/driverEnum";
 import fs = require("fs");
 
 const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
 
 const client = new Client({
 	token: apiToken,
-	baseUri: "https://api.webscraper.io/api/v1/",
 	useBackoffSleep: true,
 });
 
@@ -95,7 +95,7 @@ describe("API Client", () => {
 
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: createSitemapResponse.id,
-			driver: "fulljs",
+			driver: driver.fulljs,
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
@@ -107,7 +107,7 @@ describe("API Client", () => {
 		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: createSitemapResponse.id,
-			driver: "fulljs",
+			driver: driver.fulljs,
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
@@ -127,7 +127,7 @@ describe("API Client", () => {
 		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: createSitemapResponse.id,
-			driver: "fulljs",
+			driver: driver.fulljs,
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
@@ -146,12 +146,14 @@ describe("API Client", () => {
 		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: createSitemapResponse.id,
-			driver: "fulljs",
+			driver: driver.fulljs,
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
 		await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
-		const iterator = await client.getScrapingJobs(415221); // sitemapId 415221 ---> one job with id - 3443576
+		const iterator = await client.getScrapingJobs({
+			sitemap_id: 415221,
+		}); // sitemapId 415221 ---> one job with id - 3443576
 		const scrapingJobs: any[] = [];
 
 		for await(const record of iterator) {
@@ -206,7 +208,7 @@ describe("API Client", () => {
 		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: createSitemapResponse.id,
-			driver: "fulljs",
+			driver: driver.fulljs,
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
