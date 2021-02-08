@@ -1,0 +1,10 @@
+---
+excluded_words:
+  - webscraper
+  - DMYLJ
+  - occured
+  - outputfile
+  - allinone
+  - thisisamistake
+  - asynciterable
+  - fulljs

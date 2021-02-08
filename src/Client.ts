@@ -4,20 +4,24 @@ import {IGetScrapingJobResponse} from "./interfaces/IGetScrapingJobResponse";
 import {IGetAccountInfoResponse} from "./interfaces/IGetAccountInfoResponse";
 import {IGetSitemapResponse} from "./interfaces/IGetSitemapResponse";
 import {HttpClient} from "./HttpClient";
-import {IOptions} from "./interfaces/IOptions";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 import {IScrapingJobConfig} from "./interfaces/IScrapingJobConfig";
 import {PaginationIterator} from "./PaginationIterator";
 import {IGetProblematicUrlsResponse} from "./interfaces/IGetProblematicUrlsResponse";
 import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
+import {IClientOptions} from "./interfaces/IClientOptions";
+import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 
 export class Client {
 	private token: string;
 	private httpClient: HttpClient;
 
-	constructor(options: IOptions) {
+	constructor(options: IClientOptions) {
 		this.token = options.token;
-		this.httpClient = new HttpClient(options);
+		this.httpClient = new HttpClient({
+			token: this.token,
+			useBackoffSleep: options.useBackoffSleep,
+		});
 	}
 
 	public async createSitemap(sitemap: string): Promise<ICreateSitemapResponse> {
@@ -55,8 +59,8 @@ export class Client {
 		return response.data;
 	}
 
-	public async getScrapingJobs(sitemapId?: number): Promise<PaginationIterator<IGetScrapingJobResponse>> {
-		const iterator = new PaginationIterator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", {sitemap_id: sitemapId});
+	public async getScrapingJobs(query?: IRequestOptionsQuery): Promise<PaginationIterator<IGetScrapingJobResponse>> {
+		const iterator = new PaginationIterator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", query);
 		return iterator;
 	}
 

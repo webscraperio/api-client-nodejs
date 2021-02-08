@@ -7,7 +7,6 @@ const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5
 
 const client = new Client({
 	token: apiToken,
-	baseUri: "https://api.webscraper.io/api/v1/",
 	useBackoffSleep: true,
 });
 
