@@ -11,13 +11,10 @@ export class HttpClient {
 
 	private token: string;
 
-	private baseUri: string;
-
 	private useBackoffSleep: boolean;
 
 	constructor(options: IClientOptions) {
 		this.token = options.token;
-		this.baseUri = "https://api.webscraper.io/api/v1/";
 		this.useBackoffSleep = options.useBackoffSleep === false ? false : true; // options.useBackoffSleep!==false
 	}
 
@@ -25,9 +22,12 @@ export class HttpClient {
 
 		try {
 			const response: IWebScraperResponse<TData> = await this.requestRaw(requestOptions);
+			// if (response && response.success !== true) {
+			// 	throw new Error(`${response}`);
+			// }
 			return response;
 		} catch (e) {
-			throw new Error(`Web Scraper API Exception: ${e}`);
+			throw new Error(`Web Scraper API Exception: ${e.responseData}`);
 		}
 	}
 
@@ -66,24 +66,17 @@ export class HttpClient {
 	}
 
 	public async requestRaw<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
-
-		const callback = options.saveTo ? this.dataDownloadRequest.bind(this) : this.regularRequest.bind(this);
-		const response: IWebScraperResponse<TData> = await this.backOffRequest(callback, options);
-
-		if (response && response.success !== true) {
-			throw (response);
-		}
-
-		return response;
-	}
-
-	private async backOffRequest<TData>(request: (options: IRequestOptions) => Promise<IWebScraperResponse<TData>>, options: IRequestOptions): Promise<any> {
+		// let response: Promise<IWebScraperResponse<TData>>;
 		const allowedAttempts = this.useBackoffSleep ? 3 : 1;
 		let attempt = 1;
-
-		do {
+		// try {
+		while (attempt <= allowedAttempts) {
 			try {
-				return await request(options);
+				if (options.saveTo) {
+					return this.dataDownloadRequest(options);
+				} else {
+					return this.regularRequest(options);
+				}
 			} catch (e) {
 				const statusCode = e.response.statusCode;
 				if (attempt === allowedAttempts || statusCode !== 429) {
@@ -95,7 +88,11 @@ export class HttpClient {
 				}
 			}
 			attempt++;
-		} while (attempt <= allowedAttempts);
+		}
+		// } catch (e) {
+		// 	const a = 1;
+		// }
+		// return response;
 	}
 
 	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
@@ -133,12 +130,12 @@ export class HttpClient {
 				response.pipe(file);
 
 				response.on("end", () => {
+					file.close();
 					if (response.statusCode !== 200 && options.saveTo) {
 						const responseData = (fs.readFileSync(options.saveTo, "utf8"));
 						fs.unlinkSync(options.saveTo);
 						reject({response, responseData});
 					}
-					file.close();
 					resolve(undefined);
 				});
 			});

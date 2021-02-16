@@ -13,8 +13,8 @@ const client = new Client({
 const expectedFirstRecord = {
 	done: false,
 	value: {
-		id: 415221,
-		name: "1610955394444",
+		id: 415798,
+		name: "1610980390305",
 	},
 };
 
@@ -52,12 +52,12 @@ describe("Pagination iterator", () => {
 
 	it("should return last page number", async () => {
 		const lastPage = await iterator.getLastPage();
-		expect(lastPage).to.be.equal(2);
+		expect(lastPage).to.be.equal(4);
 	});
 
 	it("should return current position as 0 because of rewind ", async () => {
 		for await (const record of iterator) { const a = 1;}
-		expect(iterator.position).to.be.equal(iterator.total - 100);
+		expect(iterator.position).to.be.equal(iterator.total - 300);
 		await iterator.rewind();
 		expect(iterator.position).to.be.equal(0);
 		const currentRecord = await iterator.current();

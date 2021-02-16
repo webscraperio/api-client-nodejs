@@ -45,7 +45,7 @@ describe("API Client", () => {
 		try {
 			await client.downloadScrapingJobJSON(33402771, outputfile);
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(expectedError).to.equal(e.responseData.toString());
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
@@ -62,7 +62,7 @@ describe("API Client", () => {
 		try {
 			await client.downloadScrapingJobCSV(33402771, outputfile);
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(expectedError).to.equal(e.responseData.toString());
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;

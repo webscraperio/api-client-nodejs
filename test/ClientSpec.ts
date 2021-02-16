@@ -89,20 +89,20 @@ describe("API Client", () => {
 		expect(errorThrown).to.be.true;
 		createSitemapResponse = undefined;
 	});
+	for (let i = 0; i < 2000; i++) {
+		it("should create a scraping job", async () => {
+			createSitemapResponse = await client.createSitemap(sitemap);
 
-	it("should create a scraping job", async () => {
-		createSitemapResponse = await client.createSitemap(sitemap);
-
-		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: createSitemapResponse.id,
-			driver: driver.fulljs,
-			page_load_delay: 2000,
-			request_interval: 2000,
-		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
-		expect(createScrapingJobResponse.id).to.not.be.undefined;
-	});
-
+			const scrapingJobConfig: IScrapingJobConfig = {
+				sitemap_id: createSitemapResponse.id,
+				driver: driver.fulljs,
+				page_load_delay: 2000,
+				request_interval: 2000,
+			};
+			const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
+			expect(createScrapingJobResponse.id).to.not.be.undefined;
+		});
+	}
 	it("should get a scraping job", async () => {
 		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
@@ -132,7 +132,7 @@ describe("API Client", () => {
 			request_interval: 2000,
 		};
 		await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
-		const iterator = await client.getScrapingJobs(); // sitemapId 415221 ---> one job with id - 3443576
+		const iterator = await client.getScrapingJobs();
 		const scrapingJobs: any[] = [];
 
 		for await(const record of iterator) {
@@ -152,14 +152,14 @@ describe("API Client", () => {
 		};
 		await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
 		const iterator = await client.getScrapingJobs({
-			sitemap_id: 415221,
-		}); // sitemapId 415221 ---> one job with id - 3443576
+			sitemap_id: 434871,
+		}); // sitemapId 434871 ---> one job with id - 3620533
 		const scrapingJobs: any[] = [];
 
 		for await(const record of iterator) {
 			scrapingJobs.push(record);
 		}
-		expect(scrapingJobs[0].id).to.be.equal(3443576);
+		expect(scrapingJobs[0].id).to.be.equal(3620533);
 		expect(scrapingJobs.length).to.be.equal(1);
 	});
 
