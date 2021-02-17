@@ -49,7 +49,7 @@ export class Client {
 		return response.data;
 	}
 
-	public async createScrapingJob(sitemapId: number, scrapingJobConfig: IScrapingJobConfig): Promise<ICreateScrapingJobResponse> {
+	public async createScrapingJob(scrapingJobConfig: IScrapingJobConfig): Promise<ICreateScrapingJobResponse> {
 		const response: IWebScraperResponse<ICreateScrapingJobResponse> = await this.httpClient.post("scraping-job", JSON.stringify(scrapingJobConfig));
 		return response.data;
 	}
@@ -65,7 +65,7 @@ export class Client {
 	}
 
 	public async downloadScrapingJobJSON(scrapingJobId: number, fileName: string): Promise<void> {
-		await this.httpClient.requestRaw({
+		await this.httpClient.request({
 			method: "GET",
 			url: `scraping-job/${scrapingJobId}/json`,
 			saveTo: fileName,
@@ -73,7 +73,7 @@ export class Client {
 	}
 
 	public async downloadScrapingJobCSV(scrapingJobId: number, fileName: string): Promise<void> {
-		await this.httpClient.requestRaw({
+		await this.httpClient.request({
 			method: "GET",
 			url: `scraping-job/${scrapingJobId}/csv`,
 			saveTo: fileName,

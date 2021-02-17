@@ -15,19 +15,27 @@ export class HttpClient {
 
 	constructor(options: IClientOptions) {
 		this.token = options.token;
-		this.useBackoffSleep = options.useBackoffSleep === false ? false : true; // options.useBackoffSleep!==false
+		this.useBackoffSleep = options.useBackoffSleep === false ? false : true;
 	}
 
-	public async request<TData>(requestOptions: IRequestOptions): Promise<IWebScraperResponse<TData>> {
-
-		try {
-			const response: IWebScraperResponse<TData> = await this.requestRaw(requestOptions);
-			// if (response && response.success !== true) {
-			// 	throw new Error(`${response}`);
-			// }
-			return response;
-		} catch (e) {
-			throw new Error(`Web Scraper API Exception: ${e.responseData}`);
+	public async request<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+		for (let attempt = 1; attempt <= this.allowedAttempts(); attempt++) {
+			try {
+				if (options.saveTo) {
+					return await this.dataDownloadRequest(options);
+				} else {
+					return await this.regularRequest(options);
+				}
+			} catch (e) {
+				const statusCode = e.response.statusCode;
+				if (attempt === this.allowedAttempts() || statusCode !== 429) {
+					throw new Error(`Web Scraper API Exception: ${e.responseData}`);
+				}
+				const retry = e.response.headers["retry-after"];
+				if (retry) {
+					await sleep((retry * 1000) + 1000);
+				}
+			}
 		}
 	}
 
@@ -63,36 +71,6 @@ export class HttpClient {
 			method: "DELETE",
 		});
 		return response;
-	}
-
-	public async requestRaw<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
-		// let response: Promise<IWebScraperResponse<TData>>;
-		const allowedAttempts = this.useBackoffSleep ? 3 : 1;
-		let attempt = 1;
-		// try {
-		while (attempt <= allowedAttempts) {
-			try {
-				if (options.saveTo) {
-					return this.dataDownloadRequest(options);
-				} else {
-					return this.regularRequest(options);
-				}
-			} catch (e) {
-				const statusCode = e.response.statusCode;
-				if (attempt === allowedAttempts || statusCode !== 429) {
-					throw (e.responseData);
-				}
-				const retry = e.response.headers["retry-after"];
-				if (retry) {
-					await sleep((retry * 1000) + 1000);
-				}
-			}
-			attempt++;
-		}
-		// } catch (e) {
-		// 	const a = 1;
-		// }
-		// return response;
 	}
 
 	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
@@ -132,7 +110,7 @@ export class HttpClient {
 				response.on("end", () => {
 					file.close();
 					if (response.statusCode !== 200 && options.saveTo) {
-						const responseData = (fs.readFileSync(options.saveTo, "utf8"));
+						const responseData = fs.readFileSync(options.saveTo, "utf8");
 						fs.unlinkSync(options.saveTo);
 						reject({response, responseData});
 					}
@@ -176,5 +154,9 @@ export class HttpClient {
 			method: options.method,
 			headers,
 		};
+	}
+
+	private allowedAttempts(): number {
+		return this.useBackoffSleep ? 3 : 1;
 	}
 }

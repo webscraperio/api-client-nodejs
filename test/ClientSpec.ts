@@ -89,20 +89,20 @@ describe("API Client", () => {
 		expect(errorThrown).to.be.true;
 		createSitemapResponse = undefined;
 	});
-	for (let i = 0; i < 2000; i++) {
-		it("should create a scraping job", async () => {
-			createSitemapResponse = await client.createSitemap(sitemap);
 
-			const scrapingJobConfig: IScrapingJobConfig = {
-				sitemap_id: createSitemapResponse.id,
-				driver: driver.fulljs,
-				page_load_delay: 2000,
-				request_interval: 2000,
-			};
-			const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
-			expect(createScrapingJobResponse.id).to.not.be.undefined;
-		});
-	}
+	it("should create a scraping job", async () => {
+		createSitemapResponse = await client.createSitemap(sitemap);
+
+		const scrapingJobConfig: IScrapingJobConfig = {
+			sitemap_id: createSitemapResponse.id,
+			driver: driver.fulljs,
+			page_load_delay: 2000,
+			request_interval: 2000,
+		};
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(scrapingJobConfig);
+		expect(createScrapingJobResponse.id).to.not.be.undefined;
+	});
+
 	it("should get a scraping job", async () => {
 		createSitemapResponse = await client.createSitemap(sitemap);
 		const scrapingJobConfig: IScrapingJobConfig = {
@@ -111,7 +111,7 @@ describe("API Client", () => {
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(scrapingJobConfig);
 		const getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(createScrapingJobResponse.id);
 		expect(getScrapingJobResponse.id).to.equal(createScrapingJobResponse.id);
 		expect(getScrapingJobResponse.sitemap_id).to.equal(createSitemapResponse.id);
@@ -131,7 +131,7 @@ describe("API Client", () => {
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
+		await client.createScrapingJob(scrapingJobConfig);
 		const iterator = await client.getScrapingJobs();
 		const scrapingJobs: any[] = [];
 
@@ -150,7 +150,7 @@ describe("API Client", () => {
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
+		await client.createScrapingJob(scrapingJobConfig);
 		const iterator = await client.getScrapingJobs({
 			sitemap_id: 434871,
 		}); // sitemapId 434871 ---> one job with id - 3620533
@@ -166,9 +166,9 @@ describe("API Client", () => {
 	it("should download scraped data in json format", async () => {
 		const outputfile: string = "./data/outputfile.json";
 
-		const expectedOutputFie: string = '{"web-scraper-order":"1611315699-1","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"MSI GL62M 7REX2"}\n{"web-scraper-order":"1611315699-2","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"MSI GL62VR 7RFX"}\n{"web-scraper-order":"1611315699-3","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"Acer Aspire 3 A3..."}\n';
+		const expectedOutputFie: string = '{"web-scraper-order":"1614248295-1","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"IdeaTab A3500L"}\n{"web-scraper-order":"1614248295-2","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"ThinkPad Yoga"}\n{"web-scraper-order":"1614248295-3","web-scraper-start-url":"https:\\/\\/webscraper.io\\/test-sites\\/e-commerce\\/allinone","product":"Acer Aspire ES1-..."}\n';
 
-		await client.downloadScrapingJobJSON(3472328, outputfile); // 3402771 throws error //3472328 for test
+		await client.downloadScrapingJobJSON(3674377, outputfile); // 3402771 throws error //3674377 for test
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(expectedOutputFie).to.be.eql((fs.readFileSync(outputfile, "utf8")));
 		fs.unlinkSync(outputfile);
@@ -178,9 +178,9 @@ describe("API Client", () => {
 	it("should download scraped data in CSV format", async () => {
 		const outputfile: string = "./data/outputfile.csv";
 
-		const expectedOutputFie: string = '﻿web-scraper-order,web-scraper-start-url,product\r\n"1611315699-1","https://webscraper.io/test-sites/e-commerce/allinone","MSI GL62M 7REX2"\r\n"1611315699-2","https://webscraper.io/test-sites/e-commerce/allinone","MSI GL62VR 7RFX"\r\n"1611315699-3","https://webscraper.io/test-sites/e-commerce/allinone","Acer Aspire 3 A3..."\r\n';
+		const expectedOutputFie: string = '﻿web-scraper-order,web-scraper-start-url,product\r\n"1614248295-1","https://webscraper.io/test-sites/e-commerce/allinone","IdeaTab A3500L"\r\n"1614248295-2","https://webscraper.io/test-sites/e-commerce/allinone","ThinkPad Yoga"\r\n"1614248295-3","https://webscraper.io/test-sites/e-commerce/allinone","Acer Aspire ES1-..."\r\n';
 
-		await client.downloadScrapingJobCSV(3472328, outputfile); // 3402771 throws error //3472328 for test
+		await client.downloadScrapingJobCSV(3674377, outputfile); // 3402771 throws error //3674377 for test
 		expect(fs.existsSync(outputfile)).to.be.ok;
 		expect(expectedOutputFie).to.be.eql((fs.readFileSync(outputfile, "utf8")));
 		fs.unlinkSync(outputfile);
@@ -212,7 +212,7 @@ describe("API Client", () => {
 			page_load_delay: 2000,
 			request_interval: 2000,
 		};
-		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(createSitemapResponse.id, scrapingJobConfig);
+		const createScrapingJobResponse: ICreateScrapingJobResponse = await client.createScrapingJob(scrapingJobConfig);
 		const deleteScrapingJobResponse: string = await client.deleteScrapingJob(createScrapingJobResponse.id);
 		expect(deleteScrapingJobResponse).to.equal("ok");
 		const expectedError: string = "{\"success\":false,\"error\":\"An error occured\"}";
