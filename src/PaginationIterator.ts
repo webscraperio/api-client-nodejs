@@ -95,7 +95,7 @@ export class PaginationIterator<TData> {
 	}
 
 	private valid(): boolean {
-		return (!!this.array[this.position]);
+		return !!this.array[this.position];
 	}
 
 	public async getLastPage(): Promise<number> {

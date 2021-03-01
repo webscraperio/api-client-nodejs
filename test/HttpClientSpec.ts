@@ -41,38 +41,36 @@ describe("API Client", () => {
 	it("should throw an error when downloading scraped data in json format", async () => {
 		const outputfile: string = "./data/outputfile.json";
 		const expectedError: string = "{\"success\":false,\"error\":\"An error occured\"}";
+		const fullExpectedError: string = `Error: Web Scraper API Exception: ${expectedError}`;
 		let errorThrown: boolean = false;
 		try {
 			await client.downloadScrapingJobJSON(33402771, outputfile);
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(fullExpectedError).to.equal(e.toString());
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
-		// expect(fs.existsSync(outputfile)).to.be.ok;
-		// expect(fs.readFileSync(outputfile, "utf8")).to.be.eql("");
-		// fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
 	it("should throw an error when downloading scraped data in CSV format", async () => {
 		const outputfile: string = "./data/outputfile.json";
 		const expectedError: string = "{\"success\":false,\"error\":\"An error occured\"}";
+		const fullExpectedError: string = `Error: Web Scraper API Exception: ${expectedError}`;
 		let errorThrown: boolean = false;
 		try {
 			await client.downloadScrapingJobCSV(33402771, outputfile);
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(fullExpectedError).to.equal(e.toString());
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
-		// expect(fs.existsSync(outputfile)).to.be.ok;
-		// expect(fs.readFileSync(outputfile, "utf8")).to.be.eql("");
-		// fs.unlinkSync(outputfile);
 		expect(fs.existsSync(outputfile)).to.not.be.true;
 	});
 
 	// it("should not throw an error, use backoffSleep system to finish all requests", async () => {
+	// 	const time = Date.now();
+	// 	sitemap = `{"_id":"${time}","startUrl":["https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops"],"selectors":[{"id":"element","type":"SelectorElement","parentSelectors":["_root"],"selector":"div.col-sm-4","multiple":true,"delay":0},{"id":"product_name","type":"SelectorText","parentSelectors":["element"],"selector":"abc","multiple":false,"regex":"","delay":0},{"id":"product_price","type":"SelectorText","parentSelectors":["element"],"selector":"h4.pull-right","multiple":false,"regex":"","delay":0}]}`;
 	// 	createSitemapResponse = await client.createSitemap(sitemap);
 	// 	let getSitemapResponse: IGetSitemapResponse;
 	// 	let errorThrown: boolean = false;
