@@ -119,6 +119,7 @@ export class HttpClient {
 			});
 			request.on("error", (e) => {
 				file.close();
+				fs.unlinkSync(options.saveTo);
 				reject(e);
 			});
 			request.end();
