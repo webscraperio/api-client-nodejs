@@ -15,7 +15,7 @@ export class HttpClient {
 
 	constructor(options: IClientOptions) {
 		this.token = options.token;
-		this.useBackoffSleep = options.useBackoffSleep === false ? false : true;
+		this.useBackoffSleep = options.useBackoffSleep !== false;
 	}
 
 	public async request<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
@@ -27,6 +27,9 @@ export class HttpClient {
 					return await this.regularRequest(options);
 				}
 			} catch (e) {
+				if (!e.response) {
+					throw e;
+				}
 				const statusCode = e.response.statusCode;
 				if (attempt === this.allowedAttempts() || statusCode !== 429) {
 					throw new Error(`Web Scraper API Exception: ${e.responseData}`);
