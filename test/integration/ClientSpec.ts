@@ -1,5 +1,6 @@
 import {expect} from "chai";
 import {Client} from "../../src/Client";
+import {JsonReader} from "../../src/reader/JsonReader";
 import {ICreateSitemapResponse} from "../../src/interfaces/ICreateSitemapResponse";
 import {IGetSitemapResponse} from "../../src/interfaces/IGetSitemapResponse";
 import {ICreateScrapingJobResponse} from "../../src/interfaces/ICreateScrapingJobResponse";
@@ -211,6 +212,11 @@ describe("API Client", () => {
 		}
 
 		await client.downloadScrapingJobJSON(scrapingJobs[0].id, outputFile);
+
+		const reader = new JsonReader(outputFile);
+		const jsonLines = await reader.toArray();
+		expect(jsonLines.length).to.be.greaterThan(0);
+
 		expect(fs.existsSync(outputFile)).to.be.ok;
 		fs.unlinkSync(outputFile);
 		expect(fs.existsSync(outputFile)).to.not.be.true;

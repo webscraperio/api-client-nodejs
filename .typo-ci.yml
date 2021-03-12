@@ -8,3 +8,4 @@ excluded_words:
   - thisisamistake
   - asynciterable
   - fulljs
+  - crlfDelay
