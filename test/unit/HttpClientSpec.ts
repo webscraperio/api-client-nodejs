@@ -11,6 +11,11 @@ import {IGetSitemapResponse} from "../../src/interfaces/IGetSitemapResponse";
 
 chai.use(spies);
 
+// create directory
+if (!fs.existsSync("./data")) {
+	fs.mkdirSync("./data");
+}
+
 describe("Mock HttpClient", () => {
 
 	let httpClient: HttpClient;
