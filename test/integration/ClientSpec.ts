@@ -11,7 +11,7 @@ import {sleep} from "../../src/Sleep";
 import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 import fs = require("fs");
 
-const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
+const apiToken: string = "YOUR_API_TOKEN";
 
 const client = new Client({
 	token: apiToken,
@@ -28,7 +28,7 @@ if (!fs.existsSync("./data")) {
 
 async function createSitemap(): Promise<void> {
 
-	const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/test-sites/e-commerce/static/computers/tablets"],"selectors":[{"id":"selector-test","parentSelectors":["_root"],"type":"SelectorText","selector":"body:contains(\\"Computers / Tablets\\") .page-header","multiple":false,"delay":0,"regex":""}]}`;
+	const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/test-sites/e-commerce/static/computers/tablets"],"selectors":[{"id":"selector-test","parentSelectors":["_root"],"type":"SelectorText","selector":"body:contains(\\"Computers / Tablets\\") .page-header","multiple":true,"delay":0,"regex":""}]}`;
 	const response: ICreateSitemapResponse = await client.createSitemap(sitemap);
 	sitemaps.push(response);
 }
@@ -72,7 +72,7 @@ describe("API Client", () => {
 
 	it("should create a sitemap", async () => {
 
-		const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":false,"regex":"","delay":0}]}`;
+		const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":true,"regex":"","delay":0}]}`;
 		const response: ICreateSitemapResponse = await client.createSitemap(sitemap);
 		sitemaps.push(response);
 		expect(response.id).to.not.be.undefined;
@@ -99,10 +99,25 @@ describe("API Client", () => {
 		expect(allSitemaps.length).to.be.greaterThan(1);
 	});
 
+	it("should get sitemaps and manually handle pagination", async () => {
+		await createSitemap();
+		const iterator = await client.getSitemaps();
+		const allSitemaps = [];
+		let page = 1;
+		while (page <= await iterator.getLastPage()) {
+			const pageData = await iterator.getPageData(page);
+			for (const sitemap of pageData) {
+				allSitemaps.push(sitemap);
+			}
+			page++;
+		}
+		expect(allSitemaps.length).to.be.greaterThan(0);
+	});
+
 	it("should update the sitemap", async () => {
 
 		await createSitemap();
-		const newSitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":false,"regex":"","delay":0}]}`;
+		const newSitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":true,"regex":"","delay":0}]}`;
 		const updateSitemapResponse: string = await client.updateSitemap(sitemaps[0].id, newSitemap);
 		expect(updateSitemapResponse).to.be.equal("ok");
 	});
@@ -155,6 +170,21 @@ describe("API Client", () => {
 		expect(allScrapingJobs.length).to.be.greaterThan(1);
 	});
 
+	it("should get scraping jobs and manually handle pagination", async () => {
+		await createScrapingJob();
+		const iterator = await client.getScrapingJobs();
+		const allScrapingJobs = [];
+		let page = 1;
+		while (page <= await iterator.getLastPage()) {
+			const pageData = await iterator.getPageData(page);
+			for (const scrapingJob of pageData) {
+				allScrapingJobs.push(scrapingJob);
+			}
+			page++;
+		}
+		expect(allScrapingJobs.length).to.be.greaterThan(0);
+	});
+
 	it("should get scraping jobs from specific sitemap", async () => {
 
 		await createScrapingJob();
@@ -169,7 +199,7 @@ describe("API Client", () => {
 		expect(allScrapingJobs.length).to.be.equal(1);
 	});
 
-	it.skip("should download scraped data in json format", async () => {
+	it("should download scraped data in json format", async () => {
 
 		const outputFile: string = "./data/outputfile.json";
 		await createScrapingJob();
@@ -186,7 +216,7 @@ describe("API Client", () => {
 		expect(fs.existsSync(outputFile)).to.not.be.true;
 	});
 
-	it.skip("should download scraped data in CSV format", async () => {
+	it("should download scraped data in CSV format", async () => {
 
 		const outputFile: string = "./data/outputfile.csv";
 		await createScrapingJob();
@@ -203,12 +233,12 @@ describe("API Client", () => {
 		expect(fs.existsSync(outputFile)).to.not.be.true;
 	});
 
-	it.skip("should get scraping job problematic Urls", async () => {
+	it("should get scraping job problematic Urls", async () => {
 
 		await createScrapingJob(true);
 
 		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
-		while (getScrapingJob.status !== "shelved") {
+		while (getScrapingJob.status !== "finished") {
 			await sleep(10000);
 			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
 		}
@@ -227,6 +257,29 @@ describe("API Client", () => {
 		scrapingJobs = [];
 	});
 
+	it("should get problematic Urls and manually handle pagination", async () => {
+
+		await createScrapingJob(true);
+
+		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
+		while (getScrapingJob.status !== "finished") {
+			await sleep(10000);
+			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
+		}
+		const iterator = await client.getProblematicUrls(scrapingJobs[0].id);
+		const problematicUrls: IGetProblematicUrlsResponse[] = [];
+		let page = 1;
+		while (page <= await iterator.getLastPage()) {
+			const pageData = await iterator.getPageData(page);
+			for (const scrapingJob of pageData) {
+				problematicUrls.push(scrapingJob);
+			}
+			page++;
+		}
+		expect(problematicUrls.length).to.be.greaterThan(0);
+		scrapingJobs = [];
+	});
+
 	it("should delete the scraping job", async () => {
 
 		await createScrapingJob();
@@ -238,6 +291,6 @@ describe("API Client", () => {
 	it("should return account info", async () => {
 
 		const accountInfoResponse: IGetAccountInfoResponse = await client.getAccountInfo();
-		expect(accountInfoResponse.page_credits).to.be.greaterThan(0);
+		expect(accountInfoResponse.page_credits).to.not.be.undefined;
 	});
 });
