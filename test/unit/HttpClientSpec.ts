@@ -12,8 +12,8 @@ import {IGetSitemapResponse} from "../../src/interfaces/IGetSitemapResponse";
 chai.use(spies);
 
 // create directory
-if (!fs.existsSync("./data")) {
-	fs.mkdirSync("./data");
+if (!fs.existsSync("./tmp")) {
+	fs.mkdirSync("./tmp");
 }
 
 describe("Mock HttpClient", () => {
@@ -79,7 +79,7 @@ describe("Mock HttpClient", () => {
 
 	it("should make dataDownloadRequest from request", async () => {
 
-		const outputFile: string = "./data/outputfile.json";
+		const outputFile: string = "./tmp/outputfile.json";
 		chai.spy.on(httpClient, "dataDownloadRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
 				resolve('{hello: "WebScraperTest"}');
@@ -176,7 +176,7 @@ describe("Mock HttpClient", () => {
 
 	it("should save download data in file", async () => {
 
-		const outputFile: string = "./data/outputile.json";
+		const outputFile: string = "./tmp/outputile.json";
 		nock("https://api.webscraper.io")
 			.get("/api/v1/scraping-job/12345/json?api_token=123")
 			.reply(200, {hello: "WebScraper"});
@@ -216,7 +216,7 @@ describe("Mock HttpClient", () => {
 			port: 443,
 			syscall: "getaddrinfo",
 		};
-		const outputFile: string = "./data/outputile.json";
+		const outputFile: string = "./tmp/outputile.json";
 		nock("https://api.webscraper.io")
 			.get("/api/v1/scraping-job/12345/json?api_token=123")
 			.replyWithError(expectedError);
@@ -371,7 +371,7 @@ describe("Mock HttpClient", () => {
 
 	it("should make dataDownloadRequest promise reject due to success false", async () => {
 
-		const outputFile: string = "./data/outputile.json";
+		const outputFile: string = "./tmp/outputile.json";
 		nock("https://api.webscraper.io")
 			.get("/api/v1/scraping-job/12345/json?api_token=123")
 			.reply(404, {success: false, error: "An error occured"});
