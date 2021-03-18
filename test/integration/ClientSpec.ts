@@ -11,7 +11,8 @@ import {sleep} from "../../src/Sleep";
 import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 import fs = require("fs");
 
-const apiToken: string = "YOUR_API_TOKEN";
+const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
+// "YOUR_API_TOKEN";
 
 const client = new Client({
 	token: apiToken,
@@ -20,11 +21,6 @@ const client = new Client({
 
 let sitemaps: ICreateSitemapResponse[] = [];
 let scrapingJobs: ICreateScrapingJobResponse[] = [];
-
-// create directory
-if (!fs.existsSync("./data")) {
-	fs.mkdirSync("./data");
-}
 
 async function createSitemap(): Promise<void> {
 
@@ -91,27 +87,21 @@ describe("API Client", () => {
 
 		await createSitemap();
 		await createSitemap();
-		const iterator = await client.getSitemaps();
-		const allSitemaps = [];
-		for await(const sitemap of iterator) {
-			allSitemaps.push(sitemap);
-		}
+		const generator = await client.getSitemaps();
+		const allSitemaps = await generator.getAllRecords();
 		expect(allSitemaps.length).to.be.greaterThan(1);
 	});
 
-	it("should get sitemaps and manually handle pagination", async () => {
+	it("should get all sitemaps and fetch one by one", async () => {
+
 		await createSitemap();
-		const iterator = await client.getSitemaps();
+		await createSitemap();
+		const generator = await client.getSitemaps();
 		const allSitemaps = [];
-		let page = 1;
-		while (page <= await iterator.getLastPage()) {
-			const pageData = await iterator.getPageData(page);
-			for (const sitemap of pageData) {
-				allSitemaps.push(sitemap);
-			}
-			page++;
+		for await(const record of generator.fetchRecords()) {
+			allSitemaps.push(record);
 		}
-		expect(allSitemaps.length).to.be.greaterThan(0);
+		expect(allSitemaps.length).to.be.greaterThan(1);
 	});
 
 	it("should update the sitemap", async () => {
@@ -162,37 +152,42 @@ describe("API Client", () => {
 
 		await createScrapingJob();
 		await createScrapingJob();
-		const iterator = await client.getScrapingJobs();
+		const generator = await client.getScrapingJobs();
+		const allScrapingJobs = await generator.getAllRecords();
+		expect(allScrapingJobs.length).to.be.greaterThan(1);
+	});
+
+	it("should get all scraping jobs and fetch one by one", async () => {
+
+		await createSitemap();
+		await createSitemap();
+		const generator = await client.getScrapingJobs();
 		const allScrapingJobs = [];
-		for await(const record of iterator) {
+		for await(const record of generator.fetchRecords()) {
 			allScrapingJobs.push(record);
 		}
 		expect(allScrapingJobs.length).to.be.greaterThan(1);
 	});
 
-	it("should get scraping jobs and manually handle pagination", async () => {
-		await createScrapingJob();
-		const iterator = await client.getScrapingJobs();
-		const allScrapingJobs = [];
-		let page = 1;
-		while (page <= await iterator.getLastPage()) {
-			const pageData = await iterator.getPageData(page);
-			for (const scrapingJob of pageData) {
-				allScrapingJobs.push(scrapingJob);
-			}
-			page++;
-		}
-		expect(allScrapingJobs.length).to.be.greaterThan(0);
-	});
-
 	it("should get scraping jobs from specific sitemap", async () => {
 
 		await createScrapingJob();
-		const iterator = await client.getScrapingJobs({
+		const generator = await client.getScrapingJobs({
+			sitemap_id: sitemaps[0].id,
+		});
+		const allScrapingJobs = await generator.getAllRecords();
+		expect(allScrapingJobs[0].id).to.be.equal(scrapingJobs[0].id);
+		expect(allScrapingJobs.length).to.be.equal(1);
+	});
+
+	it("should get scraping jobs from specific sitemap and fetch one by one", async () => {
+
+		await createScrapingJob();
+		const generator = await client.getScrapingJobs({
 			sitemap_id: sitemaps[0].id,
 		});
 		const allScrapingJobs = [];
-		for await(const record of iterator) {
+		for await(const record of generator.fetchRecords()) {
 			allScrapingJobs.push(record);
 		}
 		expect(allScrapingJobs[0].id).to.be.equal(scrapingJobs[0].id);
@@ -201,7 +196,7 @@ describe("API Client", () => {
 
 	it("should download scraped data in json format", async () => {
 
-		const outputFile: string = "./data/outputfile.json";
+		const outputFile: string = "/tmp/outputfile.json";
 		await createScrapingJob();
 		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
 
@@ -218,7 +213,7 @@ describe("API Client", () => {
 
 	it("should download scraped data in CSV format", async () => {
 
-		const outputFile: string = "./data/outputfile.csv";
+		const outputFile: string = "/tmp/outputfile.csv";
 		await createScrapingJob();
 		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
 
@@ -243,12 +238,8 @@ describe("API Client", () => {
 			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
 		}
 
-		const iterator = await client.getProblematicUrls(scrapingJobs[0].id);
-		const problematicUrls: IGetProblematicUrlsResponse[] = [];
-
-		for await(const record of iterator) {
-			problematicUrls.push(record);
-		}
+		const generator = await client.getProblematicUrls(scrapingJobs[0].id);
+		const problematicUrls: IGetProblematicUrlsResponse[] = await generator.getAllRecords();
 
 		expect(problematicUrls).to.be.deep.equal([{
 			url: "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
@@ -257,7 +248,7 @@ describe("API Client", () => {
 		scrapingJobs = [];
 	});
 
-	it("should get problematic Urls and manually handle pagination", async () => {
+	it("should get scraping job problematic Urls and fetch one by one", async () => {
 
 		await createScrapingJob(true);
 
@@ -266,17 +257,17 @@ describe("API Client", () => {
 			await sleep(10000);
 			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
 		}
-		const iterator = await client.getProblematicUrls(scrapingJobs[0].id);
+
+		const generator = await client.getProblematicUrls(scrapingJobs[0].id);
 		const problematicUrls: IGetProblematicUrlsResponse[] = [];
-		let page = 1;
-		while (page <= await iterator.getLastPage()) {
-			const pageData = await iterator.getPageData(page);
-			for (const scrapingJob of pageData) {
-				problematicUrls.push(scrapingJob);
-			}
-			page++;
+		for await(const record of generator.fetchRecords()) {
+			problematicUrls.push(record);
 		}
-		expect(problematicUrls.length).to.be.greaterThan(0);
+
+		expect(problematicUrls).to.be.deep.equal([{
+			url: "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
+			type: "empty",
+		}]);
 		scrapingJobs = [];
 	});
 
