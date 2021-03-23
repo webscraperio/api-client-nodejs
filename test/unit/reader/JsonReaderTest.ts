@@ -2,16 +2,11 @@ import {JsonReader} from "../../../src/reader/JsonReader";
 import {expect} from "chai";
 import fs = require("fs");
 
-// create directory
-if (!fs.existsSync("./tmp")) {
-	fs.mkdirSync("./tmp");
-}
-
 describe("Json file reader", () => {
 
 	it("should fetch rows", async () => {
 
-		const outputFile = "./tmp/outputfile.json";
+		const outputFile = "/tmp/outputfile.json";
 		const data = '{ "hello": "WebScraper"}\n{ "hello": "newLine"}\n{ "hello": "anotherNewLine"}';
 		fs.writeFileSync(outputFile, data);
 
@@ -26,7 +21,7 @@ describe("Json file reader", () => {
 
 	it("should fetch empty file", async () => {
 
-		const outputFile = "./tmp/outputfile.json";
+		const outputFile = "/tmp/outputfile.json";
 		const data = "";
 		fs.writeFileSync(outputFile, data);
 
