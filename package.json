@@ -1,11 +1,7 @@
 {
-    "name": "api-client-nodejs",
+    "name": "@webscraperio/api-client-nodejs",
     "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "directories": {
-        "test": "test"
-    },
+    "description": "Node.js API SDK for Web Scraper Cloud",
     "devDependencies": {
         "@types/chai": "^4.2.14",
         "@types/chai-spies": "^1.0.3",
@@ -28,12 +24,11 @@
         "type": "git",
         "url": "git+https://github.com/webscraperio/api-client-nodejs.git"
     },
-    "author": "",
     "license": "ISC",
     "bugs": {
         "url": "https://github.com/webscraperio/api-client-nodejs/issues"
     },
-    "homepage": "https://github.com/webscraperio/api-client-nodejs#readme",
+    "homepage": "https://www.webscraper.io/",
     "dependencies": {
         "@types/node": "^14.14.25"
     }

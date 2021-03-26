@@ -9,3 +9,4 @@ excluded_words:
   - asynciterable
   - fulljs
   - crlfDelay
+  - npmignore

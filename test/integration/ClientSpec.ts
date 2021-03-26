@@ -7,13 +7,12 @@ import {ICreateScrapingJobResponse} from "../../src/interfaces/ICreateScrapingJo
 import {IGetScrapingJobResponse} from "../../src/interfaces/IGetScrapingJobResponse";
 import {IGetAccountInfoResponse} from "../../src/interfaces/IGetAccountInfoResponse";
 import {IScrapingJobConfig} from "../../src/interfaces/IScrapingJobConfig";
+import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 import {driver} from "../../src/driverEnum";
 import {sleep} from "../../src/Sleep";
-import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 import fs = require("fs");
 
-const apiToken: string = "kb3GZMBfRovH69RIDiHWB4GiDeg3bRgEdhDMYLJ9bcGY9PoMXl9Xf5ip4ro8";
-// "YOUR_API_TOKEN";
+const apiToken: string = "YOUR_API_TOKEN";
 
 const client = new Client({
 	token: apiToken,
@@ -34,7 +33,7 @@ async function createScrapingJob(withFailingUrl: boolean = false): Promise<void>
 
 	await createSitemap();
 	const scrapingJobConfig: IScrapingJobConfig = {
-		sitemap_id: sitemaps[0].id,
+		sitemap_id: sitemaps[sitemaps.length - 1].id,
 		driver: driver.fulljs,
 		page_load_delay: 2000,
 		request_interval: 2000,
