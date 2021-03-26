@@ -7,9 +7,9 @@ import {ICreateScrapingJobResponse} from "../../src/interfaces/ICreateScrapingJo
 import {IGetScrapingJobResponse} from "../../src/interfaces/IGetScrapingJobResponse";
 import {IGetAccountInfoResponse} from "../../src/interfaces/IGetAccountInfoResponse";
 import {IScrapingJobConfig} from "../../src/interfaces/IScrapingJobConfig";
+import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 import {driver} from "../../src/driverEnum";
 import {sleep} from "../../src/Sleep";
-import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 import fs = require("fs");
 
 const apiToken: string = "YOUR_API_TOKEN";

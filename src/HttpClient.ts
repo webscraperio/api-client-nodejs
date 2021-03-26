@@ -1,11 +1,11 @@
 import http = require("https");
-import url = require("url");
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 import {IRequestOptions} from "./interfaces/IRequestOptions";
 import * as fs from "fs";
 import {sleep} from "./Sleep";
 import {IHttpRequestOptions} from "./interfaces/IHttpRequestOptions";
 import {IClientOptions} from "./interfaces/IClientOptions";
+import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 
 export class HttpClient {
 
@@ -132,7 +132,7 @@ export class HttpClient {
 	private getRequestOptions(options: IRequestOptions): IHttpRequestOptions {
 		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
-			"User-Agent": "WebScraper.io NodeJS SDK v1.0", // "WebScraper.io PHP SDK v1.0
+			"User-Agent": "WebScraper.io NodeJS SDK v1.0",
 		};
 
 		if (options.data) {
@@ -142,19 +142,19 @@ export class HttpClient {
 				"Content-Length": Buffer.byteLength(options.data),
 			};
 		}
-		const requestUrl = url.parse(url.format({
-			protocol: "https",
-			hostname: "api.webscraper.io",
-			pathname: `/api/v1/${options.url}`,
-			query: {
-				api_token: this.token,
-				...options.query,
-			},
-		}));
+
+		const requestUrl = new URL(`https://api.webscraper.io/api/v1/${options.url}`);
+		if (options.query) {
+			Object.keys(options.query).forEach((key: keyof IRequestOptionsQuery) => {
+				requestUrl.searchParams.append(key, options.query[key] as unknown as string);
+			});
+		}
+		requestUrl.searchParams.append("api_token", this.token);
+		const path = requestUrl.pathname + requestUrl.search;
 		return {
 			hostname: requestUrl.hostname,
 			timeout: 600.0,
-			path: requestUrl.path,
+			path,
 			method: options.method,
 			headers,
 		};
