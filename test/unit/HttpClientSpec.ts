@@ -105,6 +105,9 @@ describe("Mock HttpClient", () => {
 			await httpClient.request({
 				url: "myTestUrl",
 				method: "POST",
+				query: {
+					sitemap_id: 1,
+				},
 			});
 		} catch (e) {
 			expect(expectedError).to.equal(e.toString());
@@ -191,12 +194,15 @@ describe("Mock HttpClient", () => {
 	it("should return response data", async () => {
 
 		nock("https://api.webscraper.io")
-			.post("/api/v1/sitemap/12345?api_token=123")
+			.post("/api/v1/sitemap/12345?api_token=123&sitemap_id=1")
 			.reply(200, {success: true, data: {id: 12345}});
 
 		const response: IWebScraperResponse<ICreateSitemapResponse> = await httpClient.request({
 			url: "sitemap/12345",
 			method: "POST",
+			query: {
+				sitemap_id: 1,
+			},
 		});
 		expect(response).to.be.eql({success: true, data: {id: 12345}});
 	});

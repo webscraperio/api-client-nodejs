@@ -9,7 +9,7 @@ to acquire API key.
 Install the API client with npm-install.
 
 ```bash
-npm install api-client-nodejs
+npm install @webscraperio/api-client-nodejs
 ```
 
 ## Usage

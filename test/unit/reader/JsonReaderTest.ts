@@ -34,4 +34,20 @@ describe("Json file reader", () => {
 		expect(fs.existsSync(outputFile)).to.not.be.true;
 	});
 
+	it("should iterate through generator with next()", async () => {
+
+		const outputFile = "/tmp/outputfile.json";
+		const data = '{ "hello": "WebScraper"}\n{ "hello": "newLine"}\n{ "hello": "anotherNewLine"}';
+		fs.writeFileSync(outputFile, data);
+
+		const rowsExpected = [{hello: "WebScraper"}, {hello: "newLine"}, {hello: "anotherNewLine"}];
+		const reader: any = new JsonReader(outputFile);
+		await reader.fetchRows().next();
+		await reader.fetchRows().next();
+		const thirdLine = await reader.fetchRows().next();
+
+		expect(thirdLine.value).to.be.eql(rowsExpected[2]);
+		fs.unlinkSync(outputFile);
+		expect(fs.existsSync(outputFile)).to.not.be.true;
+	});
 });

@@ -1,27 +1,25 @@
 import * as fs from "fs";
 import * as readline from "readline";
+import {Interface as ReadLineInterface} from "readline";
 
 export class JsonReader {
-
-	private filePath: string;
+	private readonly rl: ReadLineInterface;
 
 	constructor(filePath: string) {
-		this.filePath = filePath;
-	}
-
-	// tslint:disable-next-line:no-async-without-await
-	private async* fetchRows<T>(): AsyncGenerator<T> {
-		const filePath = this.filePath;
 		const fileStream = fs.createReadStream(filePath);
-		const rl = readline.createInterface({
+		this.rl = readline.createInterface({
 			input: fileStream,
 			crlfDelay: Infinity,
 		});
-		for await (const line of rl) {
+	}
+
+	// tslint:disable-next-line:no-async-without-await
+	public async* fetchRows<T>(): AsyncGenerator<T> {
+		for await (const line of this.rl) {
 			const lineObj = JSON.parse(line);
 			yield lineObj;
 		}
-		rl.close();
+		this.rl.close();
 	}
 
 	public async toArray<T>(): Promise<T[]> {
