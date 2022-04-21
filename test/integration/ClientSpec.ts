@@ -1,16 +1,16 @@
 import {expect} from "chai";
 import {Client} from "../../src/Client";
 import {JsonReader} from "../../src/reader/JsonReader";
-import {ICreateSitemapResponse} from "../../src/interfaces/ICreateSitemapResponse";
-import {IGetSitemapResponse} from "../../src/interfaces/IGetSitemapResponse";
-import {ICreateScrapingJobResponse} from "../../src/interfaces/ICreateScrapingJobResponse";
-import {IGetScrapingJobResponse} from "../../src/interfaces/IGetScrapingJobResponse";
-import {IGetAccountInfoResponse} from "../../src/interfaces/IGetAccountInfoResponse";
-import {IScrapingJobConfig} from "../../src/interfaces/IScrapingJobConfig";
+import {CreateSitemapResponse} from "../../src/interfaces/CreateSitemapResponse";
+import {GetSitemapResponse} from "../../src/interfaces/GetSitemapResponse";
+import {CreateScrapingJobResponse} from "../../src/interfaces/CreateScrapingJobResponse";
+import {GetScrapingJobResponse} from "../../src/interfaces/GetScrapingJobResponse";
+import {GetAccountInfoResponse} from "../../src/interfaces/GetAccountInfoResponse";
+import {ScrapingJobConfig} from "../../src/interfaces/ScrapingJobConfig";
 import {driver} from "../../src/driverEnum";
 import {sleep} from "../../src/Sleep";
 import fs = require("fs");
-import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
+import {GetProblematicUrlsResponse} from "../../src/interfaces/GetProblematicUrlsResponse";
 
 const apiToken: string = "YOUR_API_TOKEN";
 
@@ -19,20 +19,35 @@ const client = new Client({
 	useBackoffSleep: true,
 });
 
-let sitemaps: ICreateSitemapResponse[] = [];
-let scrapingJobs: ICreateScrapingJobResponse[] = [];
+const schedulerConfig = {
+	"cron_minute": "*/10",
+	"cron_hour": "*",
+	"cron_day": "*",
+	"cron_month": "*",
+	"cron_weekday": "*",
+	"request_interval": 2000,
+	"page_load_delay": 2000,
+	"cron_timezone": "Europe/Riga",
+	"driver": "fast",
+	"proxy": 0,
+};
 
-async function createSitemap(): Promise<void> {
+let sitemaps: CreateSitemapResponse[] = [];
+let scrapingJobs: CreateScrapingJobResponse[] = [];
+
+async function createSitemap(): Promise<CreateSitemapResponse> {
 
 	const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/test-sites/e-commerce/static/computers/tablets"],"selectors":[{"id":"selector-test","parentSelectors":["_root"],"type":"SelectorText","selector":"body:contains(\\"Computers / Tablets\\") .page-header","multiple":true,"delay":0,"regex":""}]}`;
-	const response: ICreateSitemapResponse = await client.createSitemap(sitemap);
-	sitemaps.push(response);
+	const sitemapData: CreateSitemapResponse = await client.createSitemap(sitemap);
+	sitemaps.push(sitemapData);
+
+	return sitemapData;
 }
 
-async function createScrapingJob(withFailingUrl: boolean = false): Promise<void> {
+async function createScrapingJob(withFailingUrl: boolean = false): Promise<CreateScrapingJobResponse> {
 
 	await createSitemap();
-	const scrapingJobConfig: IScrapingJobConfig = {
+	const scrapingJobConfig: ScrapingJobConfig = {
 		sitemap_id: sitemaps[sitemaps.length - 1].id,
 		driver: driver.fulljs,
 		page_load_delay: 2000,
@@ -49,6 +64,7 @@ async function createScrapingJob(withFailingUrl: boolean = false): Promise<void>
 
 	const response = await client.createScrapingJob(scrapingJobConfig);
 	scrapingJobs.push(response);
+	return response;
 }
 
 describe("API Client", () => {
@@ -68,16 +84,16 @@ describe("API Client", () => {
 	it("should create a sitemap", async () => {
 
 		const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":true,"regex":"","delay":0}]}`;
-		const response: ICreateSitemapResponse = await client.createSitemap(sitemap);
+		const response: CreateSitemapResponse = await client.createSitemap(sitemap);
 		sitemaps.push(response);
 		expect(response.id).to.not.be.undefined;
 	});
 
 	it("should get a sitemap", async () => {
 
-		await createSitemap();
-		const getSitemapResponse: IGetSitemapResponse = await client.getSitemap(sitemaps[0].id);
-		expect(getSitemapResponse.id).to.be.equal(sitemaps[0].id);
+		const sitemap: CreateSitemapResponse = await createSitemap();
+		const getSitemapResponse: GetSitemapResponse = await client.getSitemap(sitemap.id);
+		expect(getSitemapResponse.id).to.be.equal(sitemap.id);
 		expect(getSitemapResponse.name).to.not.be.undefined;
 		expect(getSitemapResponse.sitemap).to.not.be.undefined;
 	});
@@ -105,25 +121,25 @@ describe("API Client", () => {
 
 	it("should update the sitemap", async () => {
 
-		await createSitemap();
+		const sitemap: CreateSitemapResponse = await createSitemap();
 		const newSitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":true,"regex":"","delay":0}]}`;
-		const updateSitemapResponse: string = await client.updateSitemap(sitemaps[0].id, newSitemap);
+		const updateSitemapResponse: string = await client.updateSitemap(sitemap.id, newSitemap);
 		expect(updateSitemapResponse).to.be.equal("ok");
 	});
 
 	it("should delete the sitemap", async () => {
 
-		await createSitemap();
-		const deleteSitemapResponse: string = await client.deleteSitemap(sitemaps[0].id);
+		const sitemap: CreateSitemapResponse = await createSitemap();
+		const deleteSitemapResponse: string = await client.deleteSitemap(sitemap.id);
 		expect(deleteSitemapResponse).to.be.equal("ok");
 		sitemaps = [];
 	});
 
 	it("should create a scraping job", async () => {
 
-		await createSitemap();
-		const scrapingJobConfig: IScrapingJobConfig = {
-			sitemap_id: sitemaps[0].id,
+		const sitemap: CreateSitemapResponse = await createSitemap();
+		const scrapingJobConfig: ScrapingJobConfig = {
+			sitemap_id: sitemap.id,
 			driver: driver.fulljs,
 			page_load_delay: 2000,
 			request_interval: 2000,
@@ -135,9 +151,9 @@ describe("API Client", () => {
 
 	it("should get a scraping job", async () => {
 
-		await createScrapingJob();
-		const getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
-		expect(getScrapingJobResponse.id).to.equal(scrapingJobs[0].id);
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob();
+		const getScrapingJobResponse: GetScrapingJobResponse = await client.getScrapingJob(scrapingJob.id);
+		expect(getScrapingJobResponse.id).to.equal(scrapingJob.id);
 		expect(getScrapingJobResponse.sitemap_id).to.equal(sitemaps[0].id);
 		expect(getScrapingJobResponse.test_run).to.equal(0);
 		expect(getScrapingJobResponse.sitemap_name).to.not.be.undefined;
@@ -170,18 +186,18 @@ describe("API Client", () => {
 
 	it("should get scraping jobs from specific sitemap", async () => {
 
-		await createScrapingJob();
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob();
 		const generator = await client.getScrapingJobs({
 			sitemap_id: sitemaps[0].id,
 		});
 		const allScrapingJobs = await generator.getAllRecords();
-		expect(allScrapingJobs[0].id).to.be.equal(scrapingJobs[0].id);
+		expect(allScrapingJobs[0].id).to.be.equal(scrapingJob.id);
 		expect(allScrapingJobs.length).to.be.equal(1);
 	});
 
 	it("should get scraping jobs from specific sitemap and fetch one by one", async () => {
 
-		await createScrapingJob();
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob();
 		const generator = await client.getScrapingJobs({
 			sitemap_id: sitemaps[0].id,
 		});
@@ -189,22 +205,22 @@ describe("API Client", () => {
 		for await(const record of generator.fetchRecords()) {
 			allScrapingJobs.push(record);
 		}
-		expect(allScrapingJobs[0].id).to.be.equal(scrapingJobs[0].id);
+		expect(allScrapingJobs[0].id).to.be.equal(scrapingJob.id);
 		expect(allScrapingJobs.length).to.be.equal(1);
 	});
 
 	it("should download scraped data in json format", async () => {
 
 		const outputFile: string = "/tmp/outputfile.json";
-		await createScrapingJob();
-		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob();
+		let getScrapingJob: GetScrapingJobResponse = await client.getScrapingJob(scrapingJob.id);
 
 		while (getScrapingJob.status !== "finished") {
 			await sleep(10000);
-			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
+			getScrapingJob = await client.getScrapingJob(scrapingJob.id);
 		}
 
-		await client.downloadScrapingJobJSON(scrapingJobs[0].id, outputFile);
+		await client.downloadScrapingJobJSON(scrapingJob.id, outputFile);
 
 		const reader = new JsonReader(outputFile);
 		const jsonLines = await reader.toArray();
@@ -218,15 +234,15 @@ describe("API Client", () => {
 	it("should download scraped data in CSV format", async () => {
 
 		const outputFile: string = "/tmp/outputfile.csv";
-		await createScrapingJob();
-		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob();
+		let getScrapingJob: GetScrapingJobResponse = await client.getScrapingJob(scrapingJob.id);
 
 		while (getScrapingJob.status !== "finished") {
 			await sleep(10000);
-			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
+			getScrapingJob = await client.getScrapingJob(scrapingJob.id);
 		}
 
-		await client.downloadScrapingJobCSV(scrapingJobs[0].id, outputFile);
+		await client.downloadScrapingJobCSV(scrapingJob.id, outputFile);
 		expect(fs.existsSync(outputFile)).to.be.ok;
 		fs.unlinkSync(outputFile);
 		expect(fs.existsSync(outputFile)).to.not.be.true;
@@ -234,16 +250,16 @@ describe("API Client", () => {
 
 	it("should get scraping job problematic Urls", async () => {
 
-		await createScrapingJob(true);
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob(true);
 
-		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
+		let getScrapingJob: GetScrapingJobResponse = await client.getScrapingJob(scrapingJob.id);
 		while (getScrapingJob.status !== "finished") {
 			await sleep(10000);
-			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
+			getScrapingJob = await client.getScrapingJob(scrapingJob.id);
 		}
 
-		const generator = await client.getProblematicUrls(scrapingJobs[0].id);
-		const problematicUrls: IGetProblematicUrlsResponse[] = await generator.getAllRecords();
+		const generator = await client.getProblematicUrls(scrapingJob.id);
+		const problematicUrls: GetProblematicUrlsResponse[] = await generator.getAllRecords();
 		expect(problematicUrls).to.be.deep.equal([{
 			url: "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
 			type: "empty",
@@ -253,16 +269,16 @@ describe("API Client", () => {
 
 	it("should get scraping job problematic Urls and fetch one by one", async () => {
 
-		await createScrapingJob(true);
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob(true);
 
-		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
+		let getScrapingJob: GetScrapingJobResponse = await client.getScrapingJob(scrapingJob.id);
 		while (getScrapingJob.status !== "finished") {
 			await sleep(10000);
-			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
+			getScrapingJob = await client.getScrapingJob(scrapingJob.id);
 		}
 
-		const generator = await client.getProblematicUrls(scrapingJobs[0].id);
-		const problematicUrls: IGetProblematicUrlsResponse[] = [];
+		const generator = await client.getProblematicUrls(scrapingJob.id);
+		const problematicUrls: GetProblematicUrlsResponse[] = [];
 		for await(const record of generator.fetchRecords()) {
 			problematicUrls.push(record);
 		}
@@ -275,15 +291,49 @@ describe("API Client", () => {
 
 	it("should delete the scraping job", async () => {
 
-		await createScrapingJob();
-		const deleteScrapingJobResponse: string = await client.deleteScrapingJob(scrapingJobs[0].id);
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob();
+		const deleteScrapingJobResponse: string = await client.deleteScrapingJob(scrapingJob.id);
 		expect(deleteScrapingJobResponse).to.equal("ok");
 		scrapingJobs = [];
 	});
 
 	it("should return account info", async () => {
 
-		const accountInfoResponse: IGetAccountInfoResponse = await client.getAccountInfo();
+		const accountInfoResponse: GetAccountInfoResponse = await client.getAccountInfo();
 		expect(accountInfoResponse.page_credits).to.not.be.undefined;
+	});
+
+	it("should not get specific data quality for just created scraping job", async () => {
+
+		const scrapingJob: CreateScrapingJobResponse = await createScrapingJob();
+		const expectedError: string = 'Error: Web Scraper API Exception: {"success":false,"validationErrors":{"scraping_job_id":["Data quality check not available yet, scraping job not finished"]}}';
+		try {
+			await client.getScrapingJobDataQuality(scrapingJob.id);
+		} catch (e) {
+			expect(e.toString()).to.equal(expectedError);
+		}
+	});
+
+	it("should enable sitemap scheduler", async () => {
+
+		const sitemap: CreateSitemapResponse = await createSitemap();
+		const result = await client.enableSitemapScheduler(sitemap.id, schedulerConfig);
+		expect(result).to.eq("ok");
+	});
+
+	it("should disable sitemap scheduler", async () => {
+
+		const sitemap: CreateSitemapResponse = await createSitemap();
+		const result = await client.disableSitemapScheduler(sitemap.id);
+		expect(result).to.eq("ok");
+	});
+
+	it("should get enabled sitemap scheduler", async () => {
+
+		const sitemap: CreateSitemapResponse = await createSitemap();
+		const expectedConfig = {...schedulerConfig, ...{scheduler_enabled: true}};
+		await client.enableSitemapScheduler(sitemap.id, schedulerConfig);
+		const resultConfig = await client.getSitemapScheduler(sitemap.id);
+		expect(resultConfig).to.be.deep.equal(expectedConfig);
 	});
 });

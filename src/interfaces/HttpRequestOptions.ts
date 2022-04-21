@@ -1,4 +1,4 @@
-export interface IHttpRequestOptions {
+export interface HttpRequestOptions {
 	hostname: string;
 	timeout: number;
 	path: string;
