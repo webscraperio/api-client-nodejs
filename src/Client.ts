@@ -11,10 +11,11 @@ import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
 import {IClientOptions} from "./interfaces/IClientOptions";
 import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 import {PaginationGenerator} from "./PaginationGenerator";
+import {SitemapsRequestOptionsQuery} from "./types/SitemapsRequestOptionsQuery";
 
 export class Client {
-	private token: string;
-	private httpClient: HttpClient;
+	private readonly token: string;
+	private readonly httpClient: HttpClient;
 
 	constructor(options: IClientOptions) {
 		this.token = options.token;
@@ -34,9 +35,9 @@ export class Client {
 		return response.data;
 	}
 
-	public async getSitemaps(): Promise<PaginationGenerator<IGetSitemapsResponse>> {
-		const generator = new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps");
-		return generator;
+	public async getSitemaps(query?: SitemapsRequestOptionsQuery): Promise<IGetSitemapsResponse[]> {
+		const generator = new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps", query);
+		return generator.getAllRecords();
 	}
 
 	public async updateSitemap(sitemapId: number, sitemap: string): Promise<string> {
@@ -59,9 +60,9 @@ export class Client {
 		return response.data;
 	}
 
-	public async getScrapingJobs(query?: IRequestOptionsQuery): Promise<PaginationGenerator<IGetScrapingJobResponse>> {
+	public async getScrapingJobs(query?: IRequestOptionsQuery): Promise<IGetScrapingJobResponse[]> {
 		const generator = new PaginationGenerator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", query);
-		return generator;
+		return generator.getAllRecords();
 	}
 
 	public async downloadScrapingJobJSON(scrapingJobId: number, fileName: string): Promise<void> {
@@ -80,9 +81,9 @@ export class Client {
 		});
 	}
 
-	public async getProblematicUrls(scrapingJobId: number): Promise<PaginationGenerator<IGetProblematicUrlsResponse>> {
+	public async getProblematicUrls(scrapingJobId: number): Promise<IGetProblematicUrlsResponse[]> {
 		const generator = new PaginationGenerator<IGetProblematicUrlsResponse>(this.httpClient, `scraping-job/${scrapingJobId}/problematic-urls`);
-		return generator;
+		return generator.getAllRecords();
 	}
 
 	public async deleteScrapingJob(scrapingJobId: number): Promise<string> {

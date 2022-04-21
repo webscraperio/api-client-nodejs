@@ -1,6 +1,6 @@
 import {HttpClient} from "./HttpClient";
 import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
-import {IRequestOptions} from "./interfaces/IRequestOptions";
+import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 
 export class PaginationGenerator<TData> {
 
@@ -12,13 +12,13 @@ export class PaginationGenerator<TData> {
 
 	private httpClient: HttpClient;
 
-	private readonly uriPath: string;
-
 	private lastPage: number = 1;
 
 	private perPage: number;
 
 	private position: number = 0;
+
+	private readonly uriPath: string;
 
 	private readonly query: IRequestOptionsQuery;
 
@@ -28,22 +28,22 @@ export class PaginationGenerator<TData> {
 		this.query = query;
 	}
 
-	public async* fetchRecords(): AsyncGenerator<TData> {
-
+	private async* fetchRecords(): AsyncGenerator<TData> {
 		while (this.position + 100 * (this.page - 1) !== this.total) {
-
 			if (this.position === 100 || this.position === 0) {
 				this.page++;
-				const options: IRequestOptions = {
+				const response: IWebScraperResponse<TData[]> = await this.httpClient.request({
 					method: "GET",
 					url: this.uriPath,
 					query: {
 						page: this.page,
 						...this.query,
 					},
-				};
+				});
 
-				const response: any = await this.httpClient.request(options);
+				if (response.total <= 0) {
+					break;
+				}
 
 				this.position = 0;
 				this.lastPage = response.last_page;
@@ -51,7 +51,6 @@ export class PaginationGenerator<TData> {
 				this.perPage = response.per_page;
 				this.array = response.data;
 			}
-
 			yield this.array[this.position++];
 		}
 	}
@@ -61,7 +60,6 @@ export class PaginationGenerator<TData> {
 		for await (const record of await this.fetchRecords()) {
 			allRecords.push(record);
 		}
-
 		return allRecords;
 	}
 }
