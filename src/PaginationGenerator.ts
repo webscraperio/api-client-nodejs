@@ -1,6 +1,6 @@
 import {HttpClient} from "./HttpClient";
-import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
-import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
+import {RequestOptionsQuery} from "./interfaces/RequestOptionsQuery";
+import {WebScraperResponse} from "./interfaces/WebScraperResponse";
 
 export class PaginationGenerator<TData> {
 
@@ -20,9 +20,9 @@ export class PaginationGenerator<TData> {
 
 	private readonly uriPath: string;
 
-	private readonly query: IRequestOptionsQuery;
+	private readonly query: RequestOptionsQuery;
 
-	constructor(httpClient: HttpClient, uri: string, query?: IRequestOptionsQuery) {
+	constructor(httpClient: HttpClient, uri: string, query?: RequestOptionsQuery) {
 
 		this.httpClient = httpClient;
 		this.uriPath = uri;
@@ -34,24 +34,11 @@ export class PaginationGenerator<TData> {
 		while (this.position + 100 * (this.page - 1) !== this.total) {
 			if (this.position === 100 || this.position === 0) {
 				this.page++;
-				const response: IWebScraperResponse<TData[]> = await this.httpClient.request({
-					method: "GET",
-					url: this.uriPath,
-					query: {
-						page: this.page,
-						...this.query,
-					},
-				});
-
-				if (response.total <= 0) {
+				await this.getPageData(this.page);
+				if (this.total <= 0) {
 					break;
 				}
-
 				this.position = 0;
-				this.lastPage = response.last_page;
-				this.total = response.total;
-				this.perPage = response.per_page;
-				this.array = response.data;
 			}
 			yield this.array[this.position++];
 		}
@@ -64,5 +51,52 @@ export class PaginationGenerator<TData> {
 			allRecords.push(record);
 		}
 		return allRecords;
+	}
+
+	public async getPageData(page: number): Promise<TData[]> {
+
+		if (this.array.length && page === this.page) {
+			return this.array;
+		}
+		this.page = page;
+		const response: WebScraperResponse<TData[]> = await this.httpClient.request({
+			method: "GET",
+			url: this.uriPath,
+			query: {
+				page: this.page,
+				...this.query,
+			},
+		});
+		this.lastPage = response.last_page;
+		this.total = response.total;
+		this.perPage = response.per_page;
+		this.array = response.data;
+		return response.data;
+	}
+
+	public rewind(): void {
+
+		this.position = 0;
+		this.getPageData(1);
+	}
+
+	public current(): TData {
+
+		return this.array[this.position];
+	}
+
+	public key(): number {
+
+		return this.position + (this.perPage * (this.page - 1));
+	}
+
+	public valid(): boolean {
+
+		return this.position in this.array;
+	}
+
+	public getLastPage(): number {
+
+		return this.lastPage;
 	}
 }

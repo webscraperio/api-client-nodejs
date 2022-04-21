@@ -1,4 +1,4 @@
-export interface IScrapingJobConfig {
+export interface ScrapingJobConfig {
 	sitemap_id: number;
 	driver: string;
 	page_load_delay: number;

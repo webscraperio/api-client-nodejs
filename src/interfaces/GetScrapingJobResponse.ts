@@ -1,4 +1,4 @@
-export interface IGetScrapingJobResponse {
+export interface GetScrapingJobResponse {
 	id: number;
 	custom_id: string;
 	sitemap_name: string;

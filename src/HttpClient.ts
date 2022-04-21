@@ -1,11 +1,11 @@
 import http = require("https");
-import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
-import {IRequestOptions} from "./interfaces/IRequestOptions";
+import {WebScraperResponse} from "./interfaces/WebScraperResponse";
+import {RequestOptions} from "./interfaces/RequestOptions";
 import * as fs from "fs";
 import {sleep} from "./Sleep";
-import {IHttpRequestOptions} from "./interfaces/IHttpRequestOptions";
-import {IClientOptions} from "./interfaces/IClientOptions";
-import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
+import {HttpRequestOptions} from "./interfaces/HttpRequestOptions";
+import {ClientOptions} from "./interfaces/ClientOptions";
+import {RequestOptionsQuery} from "./interfaces/RequestOptionsQuery";
 
 export class HttpClient {
 
@@ -13,12 +13,13 @@ export class HttpClient {
 
 	private readonly useBackoffSleep: boolean;
 
-	constructor(options: IClientOptions) {
+	constructor(options: ClientOptions) {
+
 		this.token = options.token;
 		this.useBackoffSleep = options.useBackoffSleep !== false;
 	}
 
-	public async request<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+	public async request<TData>(options: RequestOptions): Promise<WebScraperResponse<TData>> {
 
 		for (let attempt = 1; attempt <= this.allowedAttempts(); attempt++) {
 			try {
@@ -43,7 +44,7 @@ export class HttpClient {
 		}
 	}
 
-	public async get<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
+	public async get<TData>(uri: string): Promise<WebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -51,7 +52,7 @@ export class HttpClient {
 		});
 	}
 
-	public async post<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
+	public async post<TData>(uri: string, data?: string): Promise<WebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -60,7 +61,7 @@ export class HttpClient {
 		});
 	}
 
-	public async put<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
+	public async put<TData>(uri: string, data: string): Promise<WebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -69,7 +70,7 @@ export class HttpClient {
 		});
 	}
 
-	public async delete<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
+	public async delete<TData>(uri: string): Promise<WebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -77,7 +78,7 @@ export class HttpClient {
 		});
 	}
 
-	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+	private async regularRequest<TData>(options: RequestOptions): Promise<WebScraperResponse<TData>> {
 
 		return new Promise((resolve, reject) => {
 			const request = http.request(this.getRequestOptions(options), (response) => {
@@ -87,7 +88,7 @@ export class HttpClient {
 				});
 
 				response.on("end", () => {
-					const dataObj: IWebScraperResponse<TData> = JSON.parse(responseData);
+					const dataObj: WebScraperResponse<TData> = JSON.parse(responseData);
 					if (!dataObj.success) {
 						return reject({response, responseData});
 					}
@@ -104,7 +105,7 @@ export class HttpClient {
 		});
 	}
 
-	private async dataDownloadRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+	private async dataDownloadRequest<TData>(options: RequestOptions): Promise<WebScraperResponse<TData>> {
 
 		return new Promise((resolve, reject) => {
 			let file: fs.WriteStream;
@@ -116,25 +117,33 @@ export class HttpClient {
 						file.close();
 						if (response.statusCode !== 200 && options.saveTo) {
 							const responseData = fs.readFileSync(options.saveTo, "utf8");
-							fs.unlinkSync(options.saveTo);
+							if (fs.existsSync(options.saveTo)) {
+								fs.unlinkSync(options.saveTo);
+							}
 							return reject({response, responseData});
 						}
 						resolve(undefined);
 					})
 					.on("error", (error) => {
+						file.close();
+						if (fs.existsSync(options.saveTo)) {
+							fs.unlinkSync(options.saveTo);
+						}
 						reject({response, error});
 					});
 			});
 			request.on("error", (e) => {
 				file.close();
-				fs.unlinkSync(options.saveTo);
+				if (fs.existsSync(options.saveTo)) {
+					fs.unlinkSync(options.saveTo);
+				}
 				reject(e);
 			});
 			request.end();
 		});
 	}
 
-	private getRequestOptions(options: IRequestOptions): IHttpRequestOptions {
+	private getRequestOptions(options: RequestOptions): HttpRequestOptions {
 
 		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
@@ -151,12 +160,13 @@ export class HttpClient {
 
 		const requestUrl = new URL(`https://api.webscraper.io/api/v1/${options.url}`);
 		if (options.query) {
-			Object.keys(options.query).forEach((key: keyof IRequestOptionsQuery) => {
+			Object.keys(options.query).forEach((key: keyof RequestOptionsQuery) => {
 				requestUrl.searchParams.append(key, options.query[key] as unknown as string);
 			});
 		}
 		requestUrl.searchParams.append("api_token", this.token);
 		const path = requestUrl.pathname + requestUrl.search;
+
 		return {
 			hostname: requestUrl.hostname,
 			timeout: 600.0,
