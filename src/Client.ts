@@ -35,9 +35,8 @@ export class Client {
 		return response.data;
 	}
 
-	public async getSitemaps(query?: SitemapsRequestOptionsQuery): Promise<IGetSitemapsResponse[]> {
-		const generator = new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps", query);
-		return generator.getAllRecords();
+	public async getSitemaps(): Promise<PaginationGenerator<IGetSitemapsResponse>> {
+		return new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps");
 	}
 
 	public async updateSitemap(sitemapId: number, sitemap: string): Promise<string> {
@@ -60,9 +59,8 @@ export class Client {
 		return response.data;
 	}
 
-	public async getScrapingJobs(query?: IRequestOptionsQuery): Promise<IGetScrapingJobResponse[]> {
-		const generator = new PaginationGenerator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", query);
-		return generator.getAllRecords();
+	public async getScrapingJobs(query?: IRequestOptionsQuery): Promise<PaginationGenerator<IGetScrapingJobResponse>> {
+		return new PaginationGenerator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", query);
 	}
 
 	public async downloadScrapingJobJSON(scrapingJobId: number, fileName: string): Promise<void> {

@@ -68,10 +68,9 @@ describe("Pagination generator", () => {
 	});
 
 	it("should iterate through generator with next()", async () => {
-		// tslint:disable:no-string-literal
-		await generator["fetchRecords"]().next();
-		await generator["fetchRecords"]().next();
-		const thirdSitemap = await generator["fetchRecords"]().next();
+		await generator.fetchRecords().next();
+		await generator.fetchRecords().next();
+		const thirdSitemap = await generator.fetchRecords().next();
 		expect(thirdSitemap.value).to.be.eql(responseSitemaps[0][2]);
 	});
 });
