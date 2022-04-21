@@ -9,9 +9,9 @@ import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 
 export class HttpClient {
 
-	private token: string;
+	private readonly token: string;
 
-	private useBackoffSleep: boolean;
+	private readonly useBackoffSleep: boolean;
 
 	constructor(options: IClientOptions) {
 		this.token = options.token;
@@ -43,37 +43,33 @@ export class HttpClient {
 	}
 
 	public async get<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
-		const response: IWebScraperResponse<TData> = await this.request({
+		return this.request({
 			url: uri,
 			method: "GET",
 		});
-		return response;
 	}
 
 	public async post<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
-		const response: IWebScraperResponse<TData> = await this.request({
+		return this.request({
 			url: uri,
 			method: "POST",
 			data,
 		});
-		return response;
 	}
 
 	public async put<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
-		const response: IWebScraperResponse<TData> = await this.request({
+		return this.request({
 			url: uri,
 			method: "PUT",
 			data,
 		});
-		return response;
 	}
 
 	public async delete<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
-		const response: IWebScraperResponse<TData> = await this.request({
+		return this.request({
 			url: uri,
 			method: "DELETE",
 		});
-		return response;
 	}
 
 	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
@@ -107,9 +103,7 @@ export class HttpClient {
 			let file: fs.WriteStream;
 			file = fs.createWriteStream(options.saveTo);
 			const request = http.request(this.getRequestOptions(options), (response) => {
-
 				response.pipe(file);
-
 				response.on("end", () => {
 					file.close();
 					if (response.statusCode !== 200 && options.saveTo) {

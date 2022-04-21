@@ -88,19 +88,19 @@ describe("Mock HttpClient", () => {
 		expect(response).to.be.eql('{hello: "WebScraperTest"}');
 	});
 
-	it("should throw an Web Scraper API Exception error", async () => {
+	it("should throw a Web Scraper API Exception error", async () => {
 
 		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
 				reject({
 					response: {statusCode: 404},
-					responseData: '{"success":false,"error":"An error occured"}',
+					responseData: '{"success":false,"error":"An error occurred"}',
 				});
 			});
 		});
 
 		let errorThrown: boolean = false;
-		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occured\"}';
+		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occurred\"}';
 		try {
 			await httpClient.request({
 				url: "myTestUrl",
@@ -117,7 +117,7 @@ describe("Mock HttpClient", () => {
 		expect(errorThrown).to.be.true;
 	});
 
-	it("should throw an Web Scraper API Exception error when all attempts have been used", async () => {
+	it("should throw a Web Scraper API Exception error when all attempts have been used", async () => {
 
 		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
@@ -126,13 +126,13 @@ describe("Mock HttpClient", () => {
 						statusCode: 429,
 						headers: {"retry-after": 1},
 					},
-					responseData: '{"success":false,"error":"An error occured"}',
+					responseData: '{"success":false,"error":"An error occurred"}',
 				});
 			});
 		});
 
 		let errorThrown: boolean = false;
-		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occured\"}';
+		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occurred\"}';
 		try {
 			await httpClient.request({
 				url: "myTestUrl",
@@ -353,12 +353,12 @@ describe("Mock HttpClient", () => {
 
 		nock("https://api.webscraper.io")
 			.post("/api/v1/sitemap/12345?api_token=123")
-			.reply(401, {success: false, error: "An error occured"});
+			.reply(401, {success: false, error: "An error occurred"});
 
 		let errorThrown: boolean = false;
-		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occured\"}';
+		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occurred\"}';
 		try {
-			const response: IWebScraperResponse<ICreateSitemapResponse> = await httpClient.request({
+			await httpClient.request({
 				url: "sitemap/12345",
 				method: "POST",
 				data: "sitemapData",
@@ -375,10 +375,10 @@ describe("Mock HttpClient", () => {
 		const outputFile: string = "/tmp/outputfile.json";
 		nock("https://api.webscraper.io")
 			.get("/api/v1/scraping-job/12345/json?api_token=123")
-			.reply(404, {success: false, error: "An error occured"});
+			.reply(404, {success: false, error: "An error occurred"});
 
 		let errorThrown: boolean = false;
-		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occured\"}';
+		const expectedError: string = 'Error: Web Scraper API Exception: {\"success\":false,\"error\":\"An error occurred\"}';
 		try {
 			await httpClient.request({
 				url: "scraping-job/12345/json",
