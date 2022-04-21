@@ -28,7 +28,7 @@ export class PaginationGenerator<TData> {
 		this.query = query;
 	}
 
-	private async* fetchRecords(): AsyncGenerator<TData> {
+	public async* fetchRecords(): AsyncGenerator<TData> {
 		while (this.position + 100 * (this.page - 1) !== this.total) {
 			if (this.position === 100 || this.position === 0) {
 				this.page++;

@@ -78,14 +78,19 @@ describe("API Client", () => {
 	it("should get sitemaps", async () => {
 		await createSitemap();
 		await createSitemap();
-		const allSitemaps = await client.getSitemaps();
+		const generator = await client.getSitemaps();
+		const allSitemaps = await generator.getAllRecords();
 		expect(allSitemaps.length).to.be.greaterThan(1);
 	});
 
 	it("should get all sitemaps and fetch one by one", async () => {
 		await createSitemap();
 		await createSitemap();
-		const allSitemaps = await client.getSitemaps();
+		const generator = await client.getSitemaps();
+		const allSitemaps = [];
+		for await(const record of generator.fetchRecords()) {
+			allSitemaps.push(record);
+		}
 		expect(allSitemaps.length).to.be.greaterThan(1);
 	});
 
@@ -132,31 +137,41 @@ describe("API Client", () => {
 	it("should get scraping jobs", async () => {
 		await createScrapingJob();
 		await createScrapingJob();
-		const allScrapingJobs = await client.getScrapingJobs();
+		const generator = await client.getScrapingJobs();
+		const allScrapingJobs = await generator.getAllRecords();
 		expect(allScrapingJobs.length).to.be.greaterThan(1);
 	});
 
 	it("should get all scraping jobs and fetch one by one", async () => {
 		await createSitemap();
 		await createSitemap();
-		const allScrapingJobs = await client.getScrapingJobs();
+		const generator = await client.getScrapingJobs();
+		const allScrapingJobs = [];
+		for await(const record of generator.fetchRecords()) {
+			allScrapingJobs.push(record);
+		}
 		expect(allScrapingJobs.length).to.be.greaterThan(1);
 	});
 
 	it("should get scraping jobs from specific sitemap", async () => {
 		await createScrapingJob();
-		const allScrapingJobs = await client.getScrapingJobs({
+		const generator = await client.getScrapingJobs({
 			sitemap_id: sitemaps[0].id,
 		});
+		const allScrapingJobs = await generator.getAllRecords();
 		expect(allScrapingJobs[0].id).to.be.equal(scrapingJobs[0].id);
 		expect(allScrapingJobs.length).to.be.equal(1);
 	});
 
 	it("should get scraping jobs from specific sitemap and fetch one by one", async () => {
 		await createScrapingJob();
-		const allScrapingJobs = await client.getScrapingJobs({
+		const generator = await client.getScrapingJobs({
 			sitemap_id: sitemaps[0].id,
 		});
+		const allScrapingJobs = [];
+		for await(const record of generator.fetchRecords()) {
+			allScrapingJobs.push(record);
+		}
 		expect(allScrapingJobs[0].id).to.be.equal(scrapingJobs[0].id);
 		expect(allScrapingJobs.length).to.be.equal(1);
 	});

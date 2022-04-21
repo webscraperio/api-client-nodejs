@@ -85,6 +85,7 @@ describe("Mock HttpClient", () => {
 			method: "GET",
 			saveTo: outputFile,
 		});
+		await new Promise(r => setTimeout(r, 100));
 		expect(response).to.be.eql('{hello: "WebScraperTest"}');
 	});
 
