@@ -10,6 +10,7 @@ import {IScrapingJobConfig} from "../../src/interfaces/IScrapingJobConfig";
 import {driver} from "../../src/driverEnum";
 import {sleep} from "../../src/Sleep";
 import fs = require("fs");
+import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 
 const apiToken: string = "YOUR_API_TOKEN";
 
@@ -222,7 +223,8 @@ describe("API Client", () => {
 			getScrapingJob = await client.getScrapingJob(scrapingJobs[0].id);
 		}
 
-		const problematicUrls = await client.getProblematicUrls(scrapingJobs[0].id);
+		const generator = await client.getProblematicUrls(scrapingJobs[0].id);
+		const problematicUrls: IGetProblematicUrlsResponse[] = await generator.getAllRecords();
 		expect(problematicUrls).to.be.deep.equal([{
 			url: "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
 			type: "empty",
