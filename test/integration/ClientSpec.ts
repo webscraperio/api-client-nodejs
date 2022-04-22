@@ -242,7 +242,7 @@ describe("API Client", () => {
 		}
 
 		const generator = await client.getProblematicUrls(scrapingJobs[0].id);
-		const problematicUrls: IGetProblematicUrlsResponse[] = await generator.getAllRecords();
+		const problematicUrls: IGetProblematicUrlsResponse[] = [];
 		for await(const record of generator.fetchRecords()) {
 			problematicUrls.push(record);
 		}

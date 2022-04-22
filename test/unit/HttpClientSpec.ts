@@ -110,7 +110,7 @@ describe("Mock HttpClient", () => {
 				},
 			});
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(e.toString()).to.equal(expectedError);
 			errorThrown = true;
 		}
 
@@ -139,7 +139,7 @@ describe("Mock HttpClient", () => {
 				method: "POST",
 			});
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(e.toString()).to.equal(expectedError);
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
@@ -166,7 +166,7 @@ describe("Mock HttpClient", () => {
 				method: "POST",
 			});
 		} catch (e) {
-			expect(expectedError).to.be.eql(e);
+			expect(e).to.be.eql(expectedError);
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
@@ -364,7 +364,7 @@ describe("Mock HttpClient", () => {
 				data: "sitemapData",
 			});
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(e.toString()).to.equal(expectedError);
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
