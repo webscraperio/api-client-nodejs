@@ -225,6 +225,9 @@ describe("API Client", () => {
 
 		const generator = await client.getProblematicUrls(scrapingJobs[0].id);
 		const problematicUrls: IGetProblematicUrlsResponse[] = await generator.getAllRecords();
+		for await(const record of generator.fetchRecords()) {
+			problematicUrls.push(record);
+		}
 		expect(problematicUrls).to.be.deep.equal([{
 			url: "https://webscraper.io/test-sites/e-commerce/static/computers/laptops",
 			type: "empty",
