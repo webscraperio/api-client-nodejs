@@ -85,7 +85,6 @@ describe("Mock HttpClient", () => {
 			method: "GET",
 			saveTo: outputFile,
 		});
-		await new Promise(r => setTimeout(r, 100));
 		expect(response).to.be.eql('{hello: "WebScraperTest"}');
 	});
 
@@ -186,7 +185,6 @@ describe("Mock HttpClient", () => {
 			saveTo: outputFile,
 		});
 
-		await new Promise(r => setTimeout(r, 100));
 		expect(fs.existsSync(outputFile)).to.be.ok;
 		expect(fs.readFileSync(outputFile, "utf-8")).to.be.eql('{"hello":"WebScraper"}');
 		fs.unlinkSync(outputFile);
@@ -388,7 +386,7 @@ describe("Mock HttpClient", () => {
 				saveTo: outputFile,
 			});
 		} catch (e) {
-			expect(expectedError).to.equal(e.toString());
+			expect(e.toString()).to.equal(expectedError);
 			errorThrown = true;
 		}
 		expect(errorThrown).to.be.true;
