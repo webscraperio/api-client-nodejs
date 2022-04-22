@@ -103,16 +103,20 @@ export class HttpClient {
 			let file: fs.WriteStream;
 			file = fs.createWriteStream(options.saveTo);
 			const request = http.request(this.getRequestOptions(options), (response) => {
-				response.pipe(file);
-				response.on("end", () => {
-					file.close();
-					if (response.statusCode !== 200 && options.saveTo) {
-						const responseData = fs.readFileSync(options.saveTo, "utf8");
-						fs.unlinkSync(options.saveTo);
-						reject({response, responseData});
-					}
-					resolve(undefined);
-				});
+				response
+					.pipe(file)
+					.on("finish", () => {
+						file.close();
+						if (response.statusCode !== 200 && options.saveTo) {
+							const responseData = fs.readFileSync(options.saveTo, "utf8");
+							fs.unlinkSync(options.saveTo);
+							reject({response, responseData});
+						}
+						resolve(undefined);
+					})
+					.on("error", (error) => {
+						reject({response, error});
+					});
 			});
 			request.on("error", (e) => {
 				file.close();
