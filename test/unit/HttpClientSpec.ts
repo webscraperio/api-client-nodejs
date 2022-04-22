@@ -186,6 +186,7 @@ describe("Mock HttpClient", () => {
 			saveTo: outputFile,
 		});
 
+		await new Promise(r => setTimeout(r, 100));
 		expect(fs.existsSync(outputFile)).to.be.ok;
 		expect(fs.readFileSync(outputFile, "utf-8")).to.be.eql('{"hello":"WebScraper"}');
 		fs.unlinkSync(outputFile);
