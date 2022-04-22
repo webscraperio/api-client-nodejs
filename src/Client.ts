@@ -79,9 +79,8 @@ export class Client {
 		});
 	}
 
-	public async getProblematicUrls(scrapingJobId: number): Promise<IGetProblematicUrlsResponse[]> {
-		const generator = new PaginationGenerator<IGetProblematicUrlsResponse>(this.httpClient, `scraping-job/${scrapingJobId}/problematic-urls`);
-		return generator.getAllRecords();
+	public async getProblematicUrls(scrapingJobId: number): Promise<PaginationGenerator<IGetProblematicUrlsResponse>> {
+		return new PaginationGenerator<IGetProblematicUrlsResponse>(this.httpClient, `scraping-job/${scrapingJobId}/problematic-urls`);
 	}
 
 	public async deleteScrapingJob(scrapingJobId: number): Promise<string> {
