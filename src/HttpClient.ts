@@ -19,6 +19,7 @@ export class HttpClient {
 	}
 
 	public async request<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+
 		for (let attempt = 1; attempt <= this.allowedAttempts(); attempt++) {
 			try {
 				if (options.saveTo) {
@@ -43,6 +44,7 @@ export class HttpClient {
 	}
 
 	public async get<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
+
 		return this.request({
 			url: uri,
 			method: "GET",
@@ -50,6 +52,7 @@ export class HttpClient {
 	}
 
 	public async post<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
+
 		return this.request({
 			url: uri,
 			method: "POST",
@@ -58,6 +61,7 @@ export class HttpClient {
 	}
 
 	public async put<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
+
 		return this.request({
 			url: uri,
 			method: "PUT",
@@ -66,6 +70,7 @@ export class HttpClient {
 	}
 
 	public async delete<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
+
 		return this.request({
 			url: uri,
 			method: "DELETE",
@@ -73,6 +78,7 @@ export class HttpClient {
 	}
 
 	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+
 		return new Promise((resolve, reject) => {
 			const request = http.request(this.getRequestOptions(options), (response) => {
 				let responseData: string = "";
@@ -99,6 +105,7 @@ export class HttpClient {
 	}
 
 	private async dataDownloadRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
+
 		return new Promise((resolve, reject) => {
 			let file: fs.WriteStream;
 			file = fs.createWriteStream(options.saveTo);
@@ -128,6 +135,7 @@ export class HttpClient {
 	}
 
 	private getRequestOptions(options: IRequestOptions): IHttpRequestOptions {
+
 		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
 			"User-Agent": "WebScraper.io NodeJS SDK v1.0",
@@ -159,6 +167,7 @@ export class HttpClient {
 	}
 
 	private allowedAttempts(): number {
+
 		return this.useBackoffSleep ? 3 : 1;
 	}
 }

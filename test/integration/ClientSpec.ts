@@ -23,12 +23,14 @@ let sitemaps: ICreateSitemapResponse[] = [];
 let scrapingJobs: ICreateScrapingJobResponse[] = [];
 
 async function createSitemap(): Promise<void> {
+
 	const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/test-sites/e-commerce/static/computers/tablets"],"selectors":[{"id":"selector-test","parentSelectors":["_root"],"type":"SelectorText","selector":"body:contains(\\"Computers / Tablets\\") .page-header","multiple":true,"delay":0,"regex":""}]}`;
 	const response: ICreateSitemapResponse = await client.createSitemap(sitemap);
 	sitemaps.push(response);
 }
 
 async function createScrapingJob(withFailingUrl: boolean = false): Promise<void> {
+
 	await createSitemap();
 	const scrapingJobConfig: IScrapingJobConfig = {
 		sitemap_id: sitemaps[sitemaps.length - 1].id,
@@ -51,6 +53,7 @@ async function createScrapingJob(withFailingUrl: boolean = false): Promise<void>
 
 describe("API Client", () => {
 	afterEach(async () => {
+
 		for (const value of scrapingJobs) {
 			await client.deleteScrapingJob(value.id);
 		}
@@ -62,6 +65,7 @@ describe("API Client", () => {
 	});
 
 	it("should create a sitemap", async () => {
+
 		const sitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":true,"regex":"","delay":0}]}`;
 		const response: ICreateSitemapResponse = await client.createSitemap(sitemap);
 		sitemaps.push(response);
@@ -69,6 +73,7 @@ describe("API Client", () => {
 	});
 
 	it("should get a sitemap", async () => {
+
 		await createSitemap();
 		const getSitemapResponse: IGetSitemapResponse = await client.getSitemap(sitemaps[0].id);
 		expect(getSitemapResponse.id).to.be.equal(sitemaps[0].id);
@@ -77,6 +82,7 @@ describe("API Client", () => {
 	});
 
 	it("should get sitemaps", async () => {
+
 		await createSitemap();
 		await createSitemap();
 		const generator = await client.getSitemaps();
@@ -85,6 +91,7 @@ describe("API Client", () => {
 	});
 
 	it("should get all sitemaps and fetch one by one", async () => {
+
 		await createSitemap();
 		await createSitemap();
 		const generator = await client.getSitemaps();
@@ -96,6 +103,7 @@ describe("API Client", () => {
 	});
 
 	it("should update the sitemap", async () => {
+
 		await createSitemap();
 		const newSitemap = `{"_id":"api-test-${Date.now()}","startUrl":["https://webscraper.io/"],"selectors":[{"id":"product_name","type":"SelectorText","parentSelectors":["_root"],"selector":"abc","multiple":true,"regex":"","delay":0}]}`;
 		const updateSitemapResponse: string = await client.updateSitemap(sitemaps[0].id, newSitemap);
@@ -103,6 +111,7 @@ describe("API Client", () => {
 	});
 
 	it("should delete the sitemap", async () => {
+
 		await createSitemap();
 		const deleteSitemapResponse: string = await client.deleteSitemap(sitemaps[0].id);
 		expect(deleteSitemapResponse).to.be.equal("ok");
@@ -110,6 +119,7 @@ describe("API Client", () => {
 	});
 
 	it("should create a scraping job", async () => {
+
 		await createSitemap();
 		const scrapingJobConfig: IScrapingJobConfig = {
 			sitemap_id: sitemaps[0].id,
@@ -123,6 +133,7 @@ describe("API Client", () => {
 	});
 
 	it("should get a scraping job", async () => {
+
 		await createScrapingJob();
 		const getScrapingJobResponse: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
 		expect(getScrapingJobResponse.id).to.equal(scrapingJobs[0].id);
@@ -136,6 +147,7 @@ describe("API Client", () => {
 	});
 
 	it("should get scraping jobs", async () => {
+
 		await createScrapingJob();
 		await createScrapingJob();
 		const generator = await client.getScrapingJobs();
@@ -144,6 +156,7 @@ describe("API Client", () => {
 	});
 
 	it("should get all scraping jobs and fetch one by one", async () => {
+
 		await createSitemap();
 		await createSitemap();
 		const generator = await client.getScrapingJobs();
@@ -155,6 +168,7 @@ describe("API Client", () => {
 	});
 
 	it("should get scraping jobs from specific sitemap", async () => {
+
 		await createScrapingJob();
 		const generator = await client.getScrapingJobs({
 			sitemap_id: sitemaps[0].id,
@@ -165,6 +179,7 @@ describe("API Client", () => {
 	});
 
 	it("should get scraping jobs from specific sitemap and fetch one by one", async () => {
+
 		await createScrapingJob();
 		const generator = await client.getScrapingJobs({
 			sitemap_id: sitemaps[0].id,
@@ -178,6 +193,7 @@ describe("API Client", () => {
 	});
 
 	it("should download scraped data in json format", async () => {
+
 		const outputFile: string = "/tmp/outputfile.json";
 		await createScrapingJob();
 		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
@@ -199,6 +215,7 @@ describe("API Client", () => {
 	});
 
 	it("should download scraped data in CSV format", async () => {
+
 		const outputFile: string = "/tmp/outputfile.csv";
 		await createScrapingJob();
 		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
@@ -215,6 +232,7 @@ describe("API Client", () => {
 	});
 
 	it("should get scraping job problematic Urls", async () => {
+
 		await createScrapingJob(true);
 
 		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
@@ -233,6 +251,7 @@ describe("API Client", () => {
 	});
 
 	it("should get scraping job problematic Urls and fetch one by one", async () => {
+
 		await createScrapingJob(true);
 
 		let getScrapingJob: IGetScrapingJobResponse = await client.getScrapingJob(scrapingJobs[0].id);
@@ -254,6 +273,7 @@ describe("API Client", () => {
 	});
 
 	it("should delete the scraping job", async () => {
+
 		await createScrapingJob();
 		const deleteScrapingJobResponse: string = await client.deleteScrapingJob(scrapingJobs[0].id);
 		expect(deleteScrapingJobResponse).to.equal("ok");
@@ -261,6 +281,7 @@ describe("API Client", () => {
 	});
 
 	it("should return account info", async () => {
+
 		const accountInfoResponse: IGetAccountInfoResponse = await client.getAccountInfo();
 		expect(accountInfoResponse.page_credits).to.not.be.undefined;
 	});
