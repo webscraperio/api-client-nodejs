@@ -23,12 +23,14 @@ export class PaginationGenerator<TData> {
 	private readonly query: IRequestOptionsQuery;
 
 	constructor(httpClient: HttpClient, uri: string, query?: IRequestOptionsQuery) {
+
 		this.httpClient = httpClient;
 		this.uriPath = uri;
 		this.query = query;
 	}
 
 	public async* fetchRecords(): AsyncGenerator<TData> {
+
 		while (this.position + 100 * (this.page - 1) !== this.total) {
 			if (this.position === 100 || this.position === 0) {
 				this.page++;
@@ -56,6 +58,7 @@ export class PaginationGenerator<TData> {
 	}
 
 	public async getAllRecords(): Promise<TData[]> {
+
 		const allRecords = [];
 		for await (const record of await this.fetchRecords()) {
 			allRecords.push(record);

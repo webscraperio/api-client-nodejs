@@ -3,9 +3,11 @@ import * as readline from "readline";
 import {Interface as ReadLineInterface} from "readline";
 
 export class JsonReader {
+
 	private readonly rl: ReadLineInterface;
 
 	constructor(filePath: string) {
+
 		const fileStream = fs.createReadStream(filePath);
 		this.rl = readline.createInterface({
 			input: fileStream,
@@ -15,6 +17,7 @@ export class JsonReader {
 
 	// tslint:disable-next-line:no-async-without-await
 	public async* fetchRows<T>(): AsyncGenerator<T> {
+
 		for await (const line of this.rl) {
 			const lineObj = JSON.parse(line);
 			yield lineObj;
@@ -23,6 +26,7 @@ export class JsonReader {
 	}
 
 	public async toArray<T>(): Promise<T[]> {
+
 		const rows = [];
 		for await (const line of this.fetchRows<T>()) {
 			rows.push(line);

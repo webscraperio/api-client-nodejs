@@ -63,11 +63,13 @@ describe("Pagination generator", () => {
 	});
 
 	it("should return fetched data", async () => {
+
 		const data = await generator.getAllRecords();
 		expect(data.length).to.be.equal(120);
 	});
 
 	it("should iterate through generator with next()", async () => {
+
 		await generator.fetchRecords().next();
 		await generator.fetchRecords().next();
 		const thirdSitemap = await generator.fetchRecords().next();
