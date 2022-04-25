@@ -83,7 +83,7 @@ export class HttpClient {
 				response.on("end", () => {
 					const dataObj: IWebScraperResponse<TData> = JSON.parse(responseData);
 					if (!dataObj.success) {
-						reject({response, responseData});
+						return reject({response, responseData});
 					}
 					resolve(dataObj);
 				});
@@ -110,7 +110,7 @@ export class HttpClient {
 						if (response.statusCode !== 200 && options.saveTo) {
 							const responseData = fs.readFileSync(options.saveTo, "utf8");
 							fs.unlinkSync(options.saveTo);
-							reject({response, responseData});
+							return reject({response, responseData});
 						}
 						resolve(undefined);
 					})

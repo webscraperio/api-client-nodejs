@@ -35,8 +35,8 @@ export class Client {
 		return response.data;
 	}
 
-	public async getSitemaps(): Promise<PaginationGenerator<IGetSitemapsResponse>> {
-		return new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps");
+	public async getSitemaps(query?: SitemapsRequestOptionsQuery): Promise<PaginationGenerator<IGetSitemapsResponse>> {
+		return new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps", query);
 	}
 
 	public async updateSitemap(sitemapId: number, sitemap: string): Promise<string> {
