@@ -52,6 +52,7 @@ async function createScrapingJob(withFailingUrl: boolean = false): Promise<void>
 }
 
 describe("API Client", () => {
+
 	afterEach(async () => {
 
 		for (const value of scrapingJobs) {
