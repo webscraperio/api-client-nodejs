@@ -1,5 +1,4 @@
 test/unit
 node_modules
 .idea
-dist
 .nyc_output
