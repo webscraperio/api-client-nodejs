@@ -1,6 +1,6 @@
 import {HttpClient} from "./HttpClient";
-import {RequestOptionsQuery} from "./interfaces/RequestOptionsQuery";
-import {WebScraperResponse} from "./interfaces/WebScraperResponse";
+import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
+import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 
 export class PaginationGenerator<TData> {
 
@@ -20,9 +20,9 @@ export class PaginationGenerator<TData> {
 
 	private readonly uriPath: string;
 
-	private readonly query: RequestOptionsQuery;
+	private readonly query: IRequestOptionsQuery;
 
-	constructor(httpClient: HttpClient, uri: string, query?: RequestOptionsQuery) {
+	constructor(httpClient: HttpClient, uri: string, query?: IRequestOptionsQuery) {
 
 		this.httpClient = httpClient;
 		this.uriPath = uri;
@@ -59,7 +59,7 @@ export class PaginationGenerator<TData> {
 			return this.array;
 		}
 		this.page = page;
-		const response: WebScraperResponse<TData[]> = await this.httpClient.request({
+		const response: IWebScraperResponse<TData[]> = await this.httpClient.request({
 			method: "GET",
 			url: this.uriPath,
 			query: {
@@ -72,27 +72,6 @@ export class PaginationGenerator<TData> {
 		this.perPage = response.per_page;
 		this.array = response.data;
 		return response.data;
-	}
-
-	public rewind(): void {
-
-		this.position = 0;
-		this.getPageData(1);
-	}
-
-	public current(): TData {
-
-		return this.array[this.position];
-	}
-
-	public key(): number {
-
-		return this.position + (this.perPage * (this.page - 1));
-	}
-
-	public valid(): boolean {
-
-		return this.position in this.array;
 	}
 
 	public getLastPage(): number {

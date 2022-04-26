@@ -22,6 +22,7 @@
     "no-empty": true,
     "no-console": true,
     "no-return-await": true,
+    "interface-name": [true, "always-prefix"],
     "no-eval": true,
     "no-invalid-template-strings": true,
     "prefer-template": true,

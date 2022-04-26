@@ -1,4 +1,4 @@
-export interface WebScraperResponse<TDataType> {
+export interface IWebScraperResponse<TDataType> {
 	success: boolean;
 	data: TDataType;
 	current_page?: number;

@@ -1,4 +1,4 @@
-export interface ClientOptions {
+export interface IClientOptions {
 	token: string;
 	useBackoffSleep?: boolean;
 }
