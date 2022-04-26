@@ -2,6 +2,7 @@
     "name": "@webscraperio/api-client-nodejs",
     "version": "1.0.0",
     "description": "Node.js API SDK for Web Scraper Cloud",
+    "main": "dist/index.js",
     "devDependencies": {
         "@types/chai": "^4.2.14",
         "@types/chai-spies": "^1.0.3",
@@ -19,7 +20,7 @@
         "test": "mocha --timeout 600000 --require ts-node/register --extension=.ts --ui bdd --recursive ./test/integration",
         "test-unit": "mocha --timeout 600000 --require ts-node/register --extension=.ts --ui bdd --recursive ./test/unit",
         "test-unit:coverage": "nyc mocha --timeout 600000 --require ts-node/register --extension=.ts --ui bdd --recursive ./test/unit",
-        "build" : "tsc"
+        "build": "tsc"
     },
     "repository": {
         "type": "git",

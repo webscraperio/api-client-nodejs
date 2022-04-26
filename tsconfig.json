@@ -5,13 +5,11 @@
     "noImplicitAny": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "declaration": true,
+    "declaration": false,
     "module": "commonjs",
     "target": "ES2017",
     "allowJs": true,
     "lib": ["es2017", "dom", "esnext.asynciterable"],
-    "incremental": true,
-    "skipLibCheck": true,
   },
   "include": [
     "src/**/*"
