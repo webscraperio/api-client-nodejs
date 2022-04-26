@@ -1,19 +1,19 @@
-import {CreateScrapingJobResponse} from "./interfaces/CreateScrapingJobResponse";
-import {CreateSitemapResponse} from "./interfaces/CreateSitemapResponse";
-import {GetScrapingJobResponse} from "./interfaces/GetScrapingJobResponse";
-import {GetAccountInfoResponse} from "./interfaces/GetAccountInfoResponse";
-import {GetSitemapResponse} from "./interfaces/GetSitemapResponse";
+import {ICreateScrapingJobResponse} from "./interfaces/ICreateScrapingJobResponse";
+import {ICreateSitemapResponse} from "./interfaces/ICreateSitemapResponse";
+import {IGetScrapingJobResponse} from "./interfaces/IGetScrapingJobResponse";
+import {IGetAccountInfoResponse} from "./interfaces/IGetAccountInfoResponse";
+import {IGetSitemapResponse} from "./interfaces/IGetSitemapResponse";
 import {HttpClient} from "./HttpClient";
-import {WebScraperResponse} from "./interfaces/WebScraperResponse";
-import {ScrapingJobConfig} from "./interfaces/ScrapingJobConfig";
-import {GetProblematicUrlsResponse} from "./interfaces/GetProblematicUrlsResponse";
-import {GetSitemapsResponse} from "./interfaces/GetSitemapsResponse";
-import {ClientOptions} from "./interfaces/ClientOptions";
-import {RequestOptionsQuery} from "./interfaces/RequestOptionsQuery";
+import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
+import {IScrapingJobConfig} from "./interfaces/IScrapingJobConfig";
+import {IGetProblematicUrlsResponse} from "./interfaces/IGetProblematicUrlsResponse";
+import {IGetSitemapsResponse} from "./interfaces/IGetSitemapsResponse";
+import {IClientOptions} from "./interfaces/IClientOptions";
+import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 import {PaginationGenerator} from "./PaginationGenerator";
-import {GetScrapingJobDataQualityResponse} from "./interfaces/GetScrapingJobDataQualityResponse";
-import {SitemapSchedulerConfig} from "./interfaces/SitemapSchedulerConfig";
-import {SitemapSchedulerConfigResponse} from "./interfaces/SitemapSchedulerConfigResponse";
+import {IGetScrapingJobDataQualityResponse} from "./interfaces/IGetScrapingJobDataQualityResponse";
+import {ISitemapSchedulerConfig} from "./interfaces/ISitemapSchedulerConfig";
+import {ISitemapSchedulerConfigResponse} from "./interfaces/ISitemapSchedulerConfigResponse";
 
 export class Client {
 
@@ -21,7 +21,7 @@ export class Client {
 
 	private readonly httpClient: HttpClient;
 
-	constructor(options: ClientOptions) {
+	constructor(options: IClientOptions) {
 
 		this.token = options.token;
 		this.httpClient = new HttpClient({
@@ -30,50 +30,50 @@ export class Client {
 		});
 	}
 
-	public async createSitemap(sitemap: string): Promise<CreateSitemapResponse> {
+	public async createSitemap(sitemap: string): Promise<ICreateSitemapResponse> {
 
-		const response: WebScraperResponse<CreateSitemapResponse> = await this.httpClient.post("sitemap", sitemap);
+		const response: IWebScraperResponse<ICreateSitemapResponse> = await this.httpClient.post("sitemap", sitemap);
 		return response.data;
 	}
 
-	public async getSitemap(sitemapId: number): Promise<GetSitemapResponse> {
+	public async getSitemap(sitemapId: number): Promise<IGetSitemapResponse> {
 
-		const response: WebScraperResponse<GetSitemapResponse> = await this.httpClient.get(`sitemap/${sitemapId}`);
+		const response: IWebScraperResponse<IGetSitemapResponse> = await this.httpClient.get(`sitemap/${sitemapId}`);
 		return response.data;
 	}
 
-	public async getSitemaps(): Promise<PaginationGenerator<GetSitemapsResponse>> {
+	public async getSitemaps(): Promise<PaginationGenerator<IGetSitemapsResponse>> {
 
-		return new PaginationGenerator<GetSitemapsResponse>(this.httpClient, "sitemaps");
+		return new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps");
 	}
 
 	public async updateSitemap(sitemapId: number, sitemap: string): Promise<string> {
 
-		const response: WebScraperResponse<string> = await this.httpClient.put(`sitemap/${sitemapId}`, sitemap);
+		const response: IWebScraperResponse<string> = await this.httpClient.put(`sitemap/${sitemapId}`, sitemap);
 		return response.data;
 	}
 
 	public async deleteSitemap(sitemapId: number): Promise<string> {
 
-		const response: WebScraperResponse<string> = await this.httpClient.delete(`sitemap/${sitemapId}`);
+		const response: IWebScraperResponse<string> = await this.httpClient.delete(`sitemap/${sitemapId}`);
 		return response.data;
 	}
 
-	public async createScrapingJob(scrapingJobConfig: ScrapingJobConfig): Promise<CreateScrapingJobResponse> {
+	public async createScrapingJob(scrapingJobConfig: IScrapingJobConfig): Promise<ICreateScrapingJobResponse> {
 
-		const response: WebScraperResponse<CreateScrapingJobResponse> = await this.httpClient.post("scraping-job", JSON.stringify(scrapingJobConfig));
+		const response: IWebScraperResponse<ICreateScrapingJobResponse> = await this.httpClient.post("scraping-job", JSON.stringify(scrapingJobConfig));
 		return response.data;
 	}
 
-	public async getScrapingJob(scrapingJobId: number): Promise<GetScrapingJobResponse> {
+	public async getScrapingJob(scrapingJobId: number): Promise<IGetScrapingJobResponse> {
 
-		const response: WebScraperResponse<GetScrapingJobResponse> = await this.httpClient.get(`scraping-job/${scrapingJobId}`);
+		const response: IWebScraperResponse<IGetScrapingJobResponse> = await this.httpClient.get(`scraping-job/${scrapingJobId}`);
 		return response.data;
 	}
 
-	public async getScrapingJobs(query?: RequestOptionsQuery): Promise<PaginationGenerator<GetScrapingJobResponse>> {
+	public async getScrapingJobs(query?: IRequestOptionsQuery): Promise<PaginationGenerator<IGetScrapingJobResponse>> {
 
-		return new PaginationGenerator<GetScrapingJobResponse>(this.httpClient, "scraping-jobs", query);
+		return new PaginationGenerator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", query);
 	}
 
 	public async downloadScrapingJobJSON(scrapingJobId: number, fileName: string): Promise<void> {
@@ -94,44 +94,44 @@ export class Client {
 		});
 	}
 
-	public async getProblematicUrls(scrapingJobId: number): Promise<PaginationGenerator<GetProblematicUrlsResponse>> {
+	public async getProblematicUrls(scrapingJobId: number): Promise<PaginationGenerator<IGetProblematicUrlsResponse>> {
 
-		return new PaginationGenerator<GetProblematicUrlsResponse>(this.httpClient, `scraping-job/${scrapingJobId}/problematic-urls`);
+		return new PaginationGenerator<IGetProblematicUrlsResponse>(this.httpClient, `scraping-job/${scrapingJobId}/problematic-urls`);
 	}
 
 	public async deleteScrapingJob(scrapingJobId: number): Promise<string> {
 
-		const response: WebScraperResponse<string> = await this.httpClient.delete(`scraping-job/${scrapingJobId}`);
+		const response: IWebScraperResponse<string> = await this.httpClient.delete(`scraping-job/${scrapingJobId}`);
 		return response.data;
 	}
 
-	public async getAccountInfo(): Promise<GetAccountInfoResponse> {
+	public async getAccountInfo(): Promise<IGetAccountInfoResponse> {
 
-		const response: WebScraperResponse<GetAccountInfoResponse> = await this.httpClient.get("account");
+		const response: IWebScraperResponse<IGetAccountInfoResponse> = await this.httpClient.get("account");
 		return response.data;
 	}
 
-	public async getScrapingJobDataQuality(scrapingJobId: number): Promise<GetScrapingJobDataQualityResponse> {
+	public async getScrapingJobDataQuality(scrapingJobId: number): Promise<IGetScrapingJobDataQualityResponse> {
 
-		const response: WebScraperResponse<GetScrapingJobDataQualityResponse> = await this.httpClient.get(`scraping-job/${scrapingJobId}/data-quality`);
+		const response: IWebScraperResponse<IGetScrapingJobDataQualityResponse> = await this.httpClient.get(`scraping-job/${scrapingJobId}/data-quality`);
 		return response.data;
 	}
 
-	public async enableSitemapScheduler(sitemapId: number, config: SitemapSchedulerConfig): Promise<string> {
+	public async enableSitemapScheduler(sitemapId: number, config: ISitemapSchedulerConfig): Promise<string> {
 
-		const response: WebScraperResponse<string> = await this.httpClient.post(`sitemap/${sitemapId}/enable-scheduler`, JSON.stringify(config));
+		const response: IWebScraperResponse<string> = await this.httpClient.post(`sitemap/${sitemapId}/enable-scheduler`, JSON.stringify(config));
 		return response.data;
 	}
 
 	public async disableSitemapScheduler(sitemapId: number): Promise<string> {
 
-		const response: WebScraperResponse<string> = await this.httpClient.post(`sitemap/${sitemapId}/disable-scheduler`);
+		const response: IWebScraperResponse<string> = await this.httpClient.post(`sitemap/${sitemapId}/disable-scheduler`);
 		return response.data;
 	}
 
-	public async getSitemapScheduler(sitemapId: number): Promise<SitemapSchedulerConfigResponse> {
+	public async getSitemapScheduler(sitemapId: number): Promise<ISitemapSchedulerConfigResponse> {
 
-		const response: WebScraperResponse<SitemapSchedulerConfigResponse> = await this.httpClient.get(`sitemap/${sitemapId}/scheduler`);
+		const response: IWebScraperResponse<ISitemapSchedulerConfigResponse> = await this.httpClient.get(`sitemap/${sitemapId}/scheduler`);
 		return response.data;
 	}
 }

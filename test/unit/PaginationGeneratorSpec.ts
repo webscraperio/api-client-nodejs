@@ -2,15 +2,15 @@ import * as chai from "chai";
 import {expect} from "chai";
 import {beforeEach} from "mocha";
 import {PaginationGenerator} from "../../src/PaginationGenerator";
-import {GetSitemapsResponse} from "../../src/interfaces/GetSitemapsResponse";
+import {IGetSitemapsResponse} from "../../src/interfaces/IGetSitemapsResponse";
 import {HttpClient} from "../../src/HttpClient";
 import * as spies from "chai-spies";
-import {RequestOptions} from "../../src/interfaces/RequestOptions";
+import {IRequestOptions} from "../../src/interfaces/IRequestOptions";
 
-let generator: PaginationGenerator<GetSitemapsResponse>;
+let generator: PaginationGenerator<IGetSitemapsResponse>;
 
 // generate two pages of sitemaps
-const responseSitemaps: GetSitemapsResponse[][] = [[], []];
+const responseSitemaps: IGetSitemapsResponse[][] = [[], []];
 
 for (let i = 0; i < 100; i++) {
 	responseSitemaps[0].push({
@@ -37,7 +37,7 @@ describe("Pagination generator", () => {
 			useBackoffSleep: true,
 		});
 
-		chai.spy.on(httpClient, "request", async (options: RequestOptions) => {
+		chai.spy.on(httpClient, "request", async (options: IRequestOptions) => {
 
 			if (options.query.page === 1) {
 				return {
@@ -76,40 +76,16 @@ describe("Pagination generator", () => {
 		expect(thirdSitemap.value).to.be.eql(responseSitemaps[0][2]);
 	});
 
-	it("should return current iterator data", async () => {
-		await generator.fetchRecords().next();
-		expect(generator.current()).to.eq(responseSitemaps[0][1]);
-		await generator.fetchRecords().next();
-		expect(generator.current()).to.eq(responseSitemaps[0][2]);
-	});
-
 	it("should get page data by page", async() => {
+
 		const response = await generator.getPageData(2);
 		expect(response).to.be.deep.equal(responseSitemaps[1]);
 	});
 
-	it("should return current iterator key", async () => {
-		await generator.fetchRecords().next();
-		await generator.fetchRecords().next();
-		expect(generator.key()).to.eq(2);
-	});
-
-	it("should return is current position valid", async () => {
-		await generator.fetchRecords().next();
-		expect(generator.valid()).to.eq(true);
-	});
-
 	it("should return last page", async () => {
+
 		await generator.getAllRecords();
 		expect(generator.getLastPage()).to.eq(2);
-	});
-
-	it("should rewind position and data to first page", async () => {
-		await generator.fetchRecords().next();
-		await generator.fetchRecords().next();
-		await generator.rewind();
-		expect(generator.key()).to.eq(0);
-		expect(generator.current()).to.eq(responseSitemaps[0][0]);
 	});
 
 	it("should return empty array if sitemaps are not created yet", async() => {

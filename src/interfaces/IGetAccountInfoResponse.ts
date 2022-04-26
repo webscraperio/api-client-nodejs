@@ -1,4 +1,4 @@
-export interface GetAccountInfoResponse {
+export interface IGetAccountInfoResponse {
 	email: string;
 	firstname: string;
 	lastname: string;

@@ -1,4 +1,4 @@
-export interface SitemapSchedulerConfig {
+export interface ISitemapSchedulerConfig {
 	cron_minute: string;
 	cron_hour: string;
 	cron_day: string;

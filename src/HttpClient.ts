@@ -1,11 +1,11 @@
 import http = require("https");
-import {WebScraperResponse} from "./interfaces/WebScraperResponse";
-import {RequestOptions} from "./interfaces/RequestOptions";
+import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
+import {IRequestOptions} from "./interfaces/IRequestOptions";
 import * as fs from "fs";
 import {sleep} from "./Sleep";
-import {HttpRequestOptions} from "./interfaces/HttpRequestOptions";
-import {ClientOptions} from "./interfaces/ClientOptions";
-import {RequestOptionsQuery} from "./interfaces/RequestOptionsQuery";
+import {IHttpRequestOptions} from "./interfaces/IHttpRequestOptions";
+import {IClientOptions} from "./interfaces/IClientOptions";
+import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 
 export class HttpClient {
 
@@ -13,13 +13,13 @@ export class HttpClient {
 
 	private readonly useBackoffSleep: boolean;
 
-	constructor(options: ClientOptions) {
+	constructor(options: IClientOptions) {
 
 		this.token = options.token;
 		this.useBackoffSleep = options.useBackoffSleep !== false;
 	}
 
-	public async request<TData>(options: RequestOptions): Promise<WebScraperResponse<TData>> {
+	public async request<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
 		for (let attempt = 1; attempt <= this.allowedAttempts(); attempt++) {
 			try {
@@ -44,7 +44,7 @@ export class HttpClient {
 		}
 	}
 
-	public async get<TData>(uri: string): Promise<WebScraperResponse<TData>> {
+	public async get<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -52,7 +52,7 @@ export class HttpClient {
 		});
 	}
 
-	public async post<TData>(uri: string, data?: string): Promise<WebScraperResponse<TData>> {
+	public async post<TData>(uri: string, data?: string): Promise<IWebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -61,7 +61,7 @@ export class HttpClient {
 		});
 	}
 
-	public async put<TData>(uri: string, data: string): Promise<WebScraperResponse<TData>> {
+	public async put<TData>(uri: string, data: string): Promise<IWebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -70,7 +70,7 @@ export class HttpClient {
 		});
 	}
 
-	public async delete<TData>(uri: string): Promise<WebScraperResponse<TData>> {
+	public async delete<TData>(uri: string): Promise<IWebScraperResponse<TData>> {
 
 		return this.request({
 			url: uri,
@@ -78,7 +78,7 @@ export class HttpClient {
 		});
 	}
 
-	private async regularRequest<TData>(options: RequestOptions): Promise<WebScraperResponse<TData>> {
+	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
 		return new Promise((resolve, reject) => {
 			const request = http.request(this.getRequestOptions(options), (response) => {
@@ -88,7 +88,7 @@ export class HttpClient {
 				});
 
 				response.on("end", () => {
-					const dataObj: WebScraperResponse<TData> = JSON.parse(responseData);
+					const dataObj: IWebScraperResponse<TData> = JSON.parse(responseData);
 					if (!dataObj.success) {
 						return reject({response, responseData});
 					}
@@ -105,7 +105,7 @@ export class HttpClient {
 		});
 	}
 
-	private async dataDownloadRequest<TData>(options: RequestOptions): Promise<WebScraperResponse<TData>> {
+	private async dataDownloadRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
 		return new Promise((resolve, reject) => {
 			let file: fs.WriteStream;
@@ -143,7 +143,7 @@ export class HttpClient {
 		});
 	}
 
-	private getRequestOptions(options: RequestOptions): HttpRequestOptions {
+	private getRequestOptions(options: IRequestOptions): IHttpRequestOptions {
 
 		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
@@ -160,7 +160,7 @@ export class HttpClient {
 
 		const requestUrl = new URL(`https://api.webscraper.io/api/v1/${options.url}`);
 		if (options.query) {
-			Object.keys(options.query).forEach((key: keyof RequestOptionsQuery) => {
+			Object.keys(options.query).forEach((key: keyof IRequestOptionsQuery) => {
 				requestUrl.searchParams.append(key, options.query[key] as unknown as string);
 			});
 		}

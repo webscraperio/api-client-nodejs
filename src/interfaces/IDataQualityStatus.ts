@@ -1,4 +1,4 @@
-export interface DataQualityStatus {
+export interface IDataQualityStatus {
 	got: number;
 	expected: number;
 	success: boolean;

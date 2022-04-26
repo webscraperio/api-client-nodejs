@@ -2,12 +2,12 @@ import * as chai from "chai";
 import {expect} from "chai";
 import {HttpClient} from "../../src/HttpClient";
 import * as spies from "chai-spies";
-import {RequestOptions} from "../../src/interfaces/RequestOptions";
+import {IRequestOptions} from "../../src/interfaces/IRequestOptions";
 import * as nock from "nock";
-import {CreateSitemapResponse} from "../../src/interfaces/CreateSitemapResponse";
-import {WebScraperResponse} from "../../src/interfaces/WebScraperResponse";
+import {ICreateSitemapResponse} from "../../src/interfaces/ICreateSitemapResponse";
+import {IWebScraperResponse} from "../../src/interfaces/IWebScraperResponse";
 import * as fs from "fs";
-import {GetSitemapResponse} from "../../src/interfaces/GetSitemapResponse";
+import {IGetSitemapResponse} from "../../src/interfaces/IGetSitemapResponse";
 
 chai.use(spies);
 
@@ -24,48 +24,48 @@ describe("Mock HttpClient", () => {
 
 	it("should make get function", async () => {
 
-		chai.spy.on(httpClient, "request", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "request", (options: IRequestOptions) => {
 			return {success: true, data: {id: 12345}};
 		});
-		const response: WebScraperResponse<GetSitemapResponse> = await httpClient.get("myTestUrl");
+		const response: IWebScraperResponse<IGetSitemapResponse> = await httpClient.get("myTestUrl");
 		expect(response.data.id).to.be.equal(12345);
 	});
 
 	it("should make post function", async () => {
 
-		chai.spy.on(httpClient, "request", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "request", (options: IRequestOptions) => {
 			return {success: true, data: {id: 12345}};
 		});
-		const response: WebScraperResponse<CreateSitemapResponse> = await httpClient.post("myTestUrl", "sitemapData");
+		const response: IWebScraperResponse<ICreateSitemapResponse> = await httpClient.post("myTestUrl", "sitemapData");
 		expect(response.data.id).to.be.equal(12345);
 	});
 
 	it("should make put function", async () => {
 
-		chai.spy.on(httpClient, "request", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "request", (options: IRequestOptions) => {
 			return {success: true, data: "ok"};
 		});
-		const response: WebScraperResponse<string> = await httpClient.put("myTestUrl", "sitemapData");
+		const response: IWebScraperResponse<string> = await httpClient.put("myTestUrl", "sitemapData");
 		expect(response.data).to.be.equal("ok");
 	});
 
 	it("should make delete function", async () => {
 
-		chai.spy.on(httpClient, "request", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "request", (options: IRequestOptions) => {
 			return {success: true, data: "ok"};
 		});
-		const response: WebScraperResponse<string> = await httpClient.delete("myTestUrl");
+		const response: IWebScraperResponse<string> = await httpClient.delete("myTestUrl");
 		expect(response.data).to.be.equal("ok");
 	});
 
 	it("should make regularRequest from request", async () => {
 
-		chai.spy.on(httpClient, "regularRequest", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
 				resolve({success: true, data: {id: 12345}});
 			});
 		});
-		const response: WebScraperResponse<CreateSitemapResponse> = await httpClient.request({
+		const response: IWebScraperResponse<ICreateSitemapResponse> = await httpClient.request({
 			url: "myTestUrl",
 			method: "POST",
 		});
@@ -75,7 +75,7 @@ describe("Mock HttpClient", () => {
 	it("should make dataDownloadRequest from request", async () => {
 
 		const outputFile: string = "/tmp/outputfile.json";
-		chai.spy.on(httpClient, "dataDownloadRequest", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "dataDownloadRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
 				resolve('{hello: "WebScraperTest"}');
 			});
@@ -90,7 +90,7 @@ describe("Mock HttpClient", () => {
 
 	it("should throw a Web Scraper API Exception error", async () => {
 
-		chai.spy.on(httpClient, "regularRequest", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
 				reject({
 					response: {statusCode: 404},
@@ -119,7 +119,7 @@ describe("Mock HttpClient", () => {
 
 	it("should throw a Web Scraper API Exception error when all attempts have been used", async () => {
 
-		chai.spy.on(httpClient, "regularRequest", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
 				reject({
 					response: {
@@ -197,7 +197,7 @@ describe("Mock HttpClient", () => {
 			.post("/api/v1/sitemap/12345?api_token=123&sitemap_id=1")
 			.reply(200, {success: true, data: {id: 12345}});
 
-		const response: WebScraperResponse<CreateSitemapResponse> = await httpClient.request({
+		const response: IWebScraperResponse<ICreateSitemapResponse> = await httpClient.request({
 			url: "sitemap/12345",
 			method: "POST",
 			query: {
@@ -261,7 +261,7 @@ describe("Mock HttpClient", () => {
 		];
 
 		let index: number = 0;
-		chai.spy.on(httpClient, "regularRequest", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return responses[index++];
 		});
 
@@ -281,7 +281,7 @@ describe("Mock HttpClient", () => {
 			useBackoffSleep: false,
 		});
 
-		chai.spy.on(httpClient, "regularRequest", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return new Promise((resolve, reject) => {
 				reject({
 					response: {
@@ -331,7 +331,7 @@ describe("Mock HttpClient", () => {
 		];
 
 		let index: number = 0;
-		chai.spy.on(httpClient, "regularRequest", (options: RequestOptions) => {
+		chai.spy.on(httpClient, "regularRequest", (options: IRequestOptions) => {
 			return responses[index++];
 		});
 
