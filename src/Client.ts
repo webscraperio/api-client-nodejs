@@ -14,6 +14,7 @@ import {PaginationGenerator} from "./PaginationGenerator";
 import {IGetScrapingJobDataQualityResponse} from "./interfaces/IGetScrapingJobDataQualityResponse";
 import {ISitemapSchedulerConfig} from "./interfaces/ISitemapSchedulerConfig";
 import {ISitemapSchedulerConfigResponse} from "./interfaces/ISitemapSchedulerConfigResponse";
+import {IDataQualityStatus} from "./interfaces/IDataQualityStatus";
 
 export class Client {
 
