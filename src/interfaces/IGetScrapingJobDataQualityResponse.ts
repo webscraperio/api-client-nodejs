@@ -5,7 +5,7 @@ export interface IGetScrapingJobDataQualityResponse {
 	max_failed_pages_percent: IDataQualityStatus;
 	max_empty_pages_percent: IDataQualityStatus;
 	min_column_records: {
-		"selector-test": IDataQualityStatus;
+		[s: string]: IDataQualityStatus;
 	};
 	overall_data_quality_success: boolean;
 }
