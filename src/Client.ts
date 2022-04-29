@@ -12,6 +12,7 @@ import {IClientOptions} from "./interfaces/IClientOptions";
 import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 import {PaginationGenerator} from "./PaginationGenerator";
 import {SitemapsRequestOptionsQuery} from "./types/SitemapsRequestOptionsQuery";
+import { computed, inject, ref, watchEffect } from "vue";
 
 export class Client {
 
@@ -40,7 +41,7 @@ export class Client {
 		return response.data;
 	}
 
-	public async getSitemaps(query?: SitemapsRequestOptionsQuery): Promise<PaginationGenerator<IGetSitemapsResponse>> {
+	public getSitemaps(query?: SitemapsRequestOptionsQuery): PaginationGenerator<IGetSitemapsResponse> {
 
 		return new PaginationGenerator<IGetSitemapsResponse>(this.httpClient, "sitemaps", query);
 	}
@@ -69,7 +70,7 @@ export class Client {
 		return response.data;
 	}
 
-	public async getScrapingJobs(query?: IRequestOptionsQuery): Promise<PaginationGenerator<IGetScrapingJobResponse>> {
+	public getScrapingJobs(query?: IRequestOptionsQuery): PaginationGenerator<IGetScrapingJobResponse> {
 
 		return new PaginationGenerator<IGetScrapingJobResponse>(this.httpClient, "scraping-jobs", query);
 	}
@@ -92,7 +93,7 @@ export class Client {
 		});
 	}
 
-	public async getProblematicUrls(scrapingJobId: number): Promise<PaginationGenerator<IGetProblematicUrlsResponse>> {
+	public getProblematicUrls(scrapingJobId: number): PaginationGenerator<IGetProblematicUrlsResponse> {
 
 		return new PaginationGenerator<IGetProblematicUrlsResponse>(this.httpClient, `scraping-job/${scrapingJobId}/problematic-urls`);
 	}

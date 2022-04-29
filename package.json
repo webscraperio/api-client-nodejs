@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Node.js API SDK for Web Scraper Cloud",
     "main": "dist/index.js",
-    "types": "dist/types/index.d.ts",
+    "types": "dist/index.d.ts",
     "devDependencies": {
         "@types/chai": "^4.2.14",
         "@types/chai-spies": "^1.0.3",
@@ -34,6 +34,12 @@
     },
     "homepage": "https://www.webscraper.io/",
     "dependencies": {
-        "@types/node": "^14.14.25"
+        "@types/node": "^14.14.25",
+        "buffer": "^6.0.3",
+        "events": "^3.3.0",
+        "https-browserify": "^1.0.0",
+        "stream": "0.0.2",
+        "timers": "^0.1.1",
+        "vue": "^3.2.33"
     }
 }

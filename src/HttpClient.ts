@@ -1,4 +1,4 @@
-import http = require("https");
+import { request } from "https";
 import {IWebScraperResponse} from "./interfaces/IWebScraperResponse";
 import {IRequestOptions} from "./interfaces/IRequestOptions";
 import * as fs from "fs";
@@ -80,7 +80,7 @@ export class HttpClient {
 	private async regularRequest<TData>(options: IRequestOptions): Promise<IWebScraperResponse<TData>> {
 
 		return new Promise((resolve, reject) => {
-			const request = http.request(this.getRequestOptions(options), (response) => {
+			const requestClient = request(this.getRequestOptions(options), (response) => {
 				let responseData: string = "";
 				response.on("data", (chunk) => {
 					responseData += chunk;
@@ -95,12 +95,12 @@ export class HttpClient {
 				});
 			});
 			if (options.data) {
-				request.write(options.data);
+				requestClient.write(options.data);
 			}
-			request.on("error", (e) => {
+			requestClient.on("error", (e) => {
 				reject(e);
 			});
-			request.end();
+			requestClient.end();
 		});
 	}
 
@@ -109,7 +109,7 @@ export class HttpClient {
 		return new Promise((resolve, reject) => {
 			let file: fs.WriteStream;
 			file = fs.createWriteStream(options.saveTo);
-			const request = http.request(this.getRequestOptions(options), (response) => {
+			const requestClient = request(this.getRequestOptions(options), (response) => {
 				response
 					.pipe(file)
 					.on("finish", () => {
@@ -125,12 +125,12 @@ export class HttpClient {
 						reject({response, error});
 					});
 			});
-			request.on("error", (e) => {
+			requestClient.on("error", (e) => {
 				file.close();
 				fs.unlinkSync(options.saveTo);
 				reject(e);
 			});
-			request.end();
+			requestClient.end();
 		});
 	}
 
