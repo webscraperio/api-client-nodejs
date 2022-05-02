@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {Client} from "../../src/Client";
+import {Client} from "../../src";
 import {JsonReader} from "../../src/reader/JsonReader";
 import {ICreateSitemapResponse} from "../../src/interfaces/ICreateSitemapResponse";
 import {IGetSitemapResponse} from "../../src/interfaces/IGetSitemapResponse";
@@ -12,7 +12,7 @@ import {sleep} from "../../src/Sleep";
 import fs = require("fs");
 import {IGetProblematicUrlsResponse} from "../../src/interfaces/IGetProblematicUrlsResponse";
 
-const apiToken: string = "YOUR_API_TOKEN";
+const apiToken: string = "hMCSlT3NNFaRFIkAx90zaMx0jfARncnvSwXmOvG2CDBkZByLMyaL15SYQgQA";
 
 const client = new Client({
 	token: apiToken,

@@ -12,7 +12,6 @@ import {IClientOptions} from "./interfaces/IClientOptions";
 import {IRequestOptionsQuery} from "./interfaces/IRequestOptionsQuery";
 import {PaginationGenerator} from "./PaginationGenerator";
 import {SitemapsRequestOptionsQuery} from "./types/SitemapsRequestOptionsQuery";
-import { computed, inject, ref, watchEffect } from "vue";
 
 export class Client {
 
