@@ -9,9 +9,7 @@
     "module": "commonjs",
     "target": "ES2017",
     "allowJs": true,
-    "lib": ["es2017", "dom", "esnext.asynciterable"],
-    "moduleResolution": "node",
-    "esModuleInterop": true
+    "lib": ["es2017", "dom", "esnext.asynciterable"]
   },
   "include": [
     "src/**/*"
