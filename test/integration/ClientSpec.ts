@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {Client} from "../../src/Client";
+import {Client} from "../../src";
 import {JsonReader} from "../../src/reader/JsonReader";
 import {ICreateSitemapResponse} from "../../src/interfaces/ICreateSitemapResponse";
 import {IGetSitemapResponse} from "../../src/interfaces/IGetSitemapResponse";
