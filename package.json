@@ -2,9 +2,9 @@
     "name": "@webscraperio/api-client-nodejs",
     "version": "1.0.0",
     "description": "Node.js API SDK for Web Scraper Cloud",
-    "main": "dist/cjs/Client.js",
-    "module": "dist/esm/Client.js",
-    "types": "dist/types/Client.d.js",
+    "main": "dist/cjs/index.js",
+    "module": "dist/esm/index.js",
+    "types": "dist/types/index.d.ts",
     "devDependencies": {
         "@types/chai": "^4.2.14",
         "@types/chai-spies": "^1.0.3",
