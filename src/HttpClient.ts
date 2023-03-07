@@ -147,7 +147,7 @@ export class HttpClient {
 
 		let headers: { [s: string]: string | number } = {
 			"Accept": "application/json, text/javascript, */*",
-			"User-Agent": "WebScraper.io NodeJS SDK v1.0",
+			"User-Agent": "WebScraper.io NodeJS SDK v1.1.0",
 		};
 
 		if (options.data) {
