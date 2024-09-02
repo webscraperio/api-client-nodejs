@@ -11,13 +11,13 @@ jobs:
       matrix:
         node: [ 14, 16, 18, 19 ]
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - name: Cache node_modules
         id: node_modules
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: node_modules
